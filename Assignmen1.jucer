@@ -12,12 +12,12 @@
               companyName="SPPlugins" companyEmail="samuel.perry89@gmail.com">
   <MAINGROUP id="hyzDI2" name="Assignment1">
     <GROUP id="{2A8AB319-B99F-7EC5-7146-4693F6286790}" name="Source">
+      <FILE id="LmIR2O" name="CrossoverFilter.cpp" compile="1" resource="0"
+            file="Source/CrossoverFilter.cpp"/>
+      <FILE id="FEUnmm" name="CrossoverFilter.h" compile="0" resource="0"
+            file="Source/CrossoverFilter.h"/>
       <FILE id="NCl8iV" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
-      <FILE id="SlnqCk" name="ParametricEQFilter.cpp" compile="1" resource="0"
-            file="Source/ParametricEQFilter.cpp"/>
-      <FILE id="i1ivPp" name="ParametricEQFilter.h" compile="0" resource="0"
-            file="Source/ParametricEQFilter.h"/>
       <FILE id="vzF4H3" name="PluginProcessor.h" compile="0" resource="0"
             file="Source/PluginProcessor.h"/>
       <FILE id="I9JFHV" name="PluginEditor.cpp" compile="1" resource="0"
@@ -28,8 +28,10 @@
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX" vst3Folder="">
       <CONFIGURATIONS>
-        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="Assignment1"/>
-        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="Assignment1"/>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="Assignment1"
+                       cppLanguageStandard="c++14"/>
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="Assignment1"
+                       cppLanguageStandard="c++14"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../../../Applications/Projucer/JUCE/modules"/>

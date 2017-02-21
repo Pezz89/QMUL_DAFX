@@ -1,23 +1,23 @@
 /*
   This code accompanies the textbook:
- 
+
   Digital Audio Effects: Theory, Implementation and Application
   Joshua D. Reiss and Andrew P. McPherson
- 
+
   ---
- 
+
   Parametric EQ: parametric equaliser adjusting frequency, Q and gain
   See textbook Chapter 4: Filter Effects
- 
+
   Code by Andrew McPherson, Brecht De Man and Joshua Reiss
- 
+
   ---
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
- 
+
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -39,25 +39,45 @@
  * to the equations in the Reiss and McPherson text.
  */
 
-class ParametricEQFilter : public IIRFilter
+class CrossoverFilter
 {
 public:
     //==============================================================================
-	
-	/* Makes a parametric EQ section entirely from discrete-time parameters.
-     * Frequency here is specified from 0 to M_PI.
-     */
-	void makeParametric (const double discreteFrequency,
-                         const double Q,
-                         const double gainFactor) noexcept;
-	
+
+    CrossoverFilter(bool highpass, bool linkwitzRiley) noexcept;
+    ~CrossoverFilter() noexcept {}
+    void makeCrossover (
+        const double crossoverFrequency, 
+        const bool linkwitzRiley, 
+        const bool highpass
+    ) noexcept;
+
+    void applyFilter(float* const samples, const int numSamples) noexcept;
+
+
     /** Makes this filter duplicate the set-up of another one.
-	 */
-    void copyCoefficientsFrom (const ParametricEQFilter& other) noexcept;
-	
+     */
+    //void copyCoefficientsFrom (const CrossoverFilter& other) noexcept;
+
+
 private:
     //==============================================================================
-	JUCE_LEAK_DETECTOR (ParametricEQFilter);
+    // Vector used for dynamic allocation of numerators and denominators
+    // based on filter order
+    std::vector<double> numerator;
+    std::vector<double> denominator;
+    // Vector used for dynamic allocation of delay line size based on
+    // filter type
+    std::vector<float> inputDelayBuf;
+    std::vector<float> outputDelayBuf;
+    std::vector<float>::size_type inputDelaySize, outputDelaySize;
+    unsigned int inputDelayBufWritePtr, outputDelayBufWritePtr = 0;
+    SpinLock processLock;
+
+    JUCE_LEAK_DETECTOR (CrossoverFilter);
+
+    // Convolution function adapted from: http://stackoverflow.com/questions/24518989/how-to-perform-1-dimensional-valid-convolution
+    std::vector<double> convolveCoefficients(std::vector<double> const &f, std::vector<double> const &g);
 };
 
 

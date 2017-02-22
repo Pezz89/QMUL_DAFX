@@ -31,30 +31,42 @@
 #include <cmath>
 #include <vector>
 
+#if JUCE_INTEL
+ #define JUCE_SNAP_TO_ZERO(n)    if (! (n < -1.0e-8f || n > 1.0e-8f)) n = 0;
+#else
+ #define JUCE_SNAP_TO_ZERO(n)
+#endif
+
 /* The actual audio processing is handled by the Juce IIRFilter parent
  * class. This subclass is used to define the coefficients for our
  * implementation of a parametric equaliser.
  */
 
-CrossoverFilter::CrossoverFilter(bool highpass, bool linkwitzRiley) noexcept {
-    numerator.resize(3);
-    denominator.resize(3);
+CrossoverFilter::CrossoverFilter(bool highpass, bool linkwitzRiley) noexcept  {
+    //active = false;
+    numerator.resize(3, 0);
+    denominator.resize(3, 0);
+    /*
     // Allocate memory for delay line based on the number of
     // coefficients generated. Initialize vectors with values of 0.
-    inputDelayBuf.assign(int(numerator.size()), 0.0);
-    outputDelayBuf.assign(int(denominator.size()), 0.0);
+    inputDelayBuf.resize(int(numerator.size()), 0);
+    outputDelayBuf.resize(int(denominator.size()), 0);
     // Store the delay size of delay buffers
     inputDelaySize = inputDelayBuf.size();
     outputDelaySize = outputDelayBuf.size();
+    */
 }
 
 void CrossoverFilter::makeCrossover(
         const double crossoverFrequency,
+        const int sampleRate,
         const bool linkwitzRiley,
         const bool highpass
     ) noexcept
 {
-    jassert (crossoverFrequency > 0);
+
+    jassert (sampleRate > 0);
+    jassert (crossoverFrequency > 0 && crossoverFrequency <= sampleRate * 0.5);
 
     // This code was adapted from code originally submitted by the author for
     // the Real-time DSP module.
@@ -63,29 +75,26 @@ void CrossoverFilter::makeCrossover(
     static const double q = sqrt(2.0);
 
     // Warp the frequency to convert from continuous to discrete time cutoff
-    const double wd1 = 1.0 / tan(M_PI*crossoverFrequency);
+    const double wd1 = 1.0 / tan(M_PI*(crossoverFrequency/sampleRate));
 
     // Calculate coefficients from equation and store in a vector
     numerator[0] = 1.0 / (1.0 + q*wd1 + pow(wd1, 2));
     numerator[1] = 2 * numerator[0];
     numerator[2] = numerator[0];
     denominator[0] = 1.0;
-    denominator[1] = 2.0 * (pow(wd1, 2) - 1.0) * numerator[0];
-    denominator[2] = -(1.0 - q * wd1 + pow(wd1, 2)) * numerator[0];
+    denominator[1] = -2.0 * (pow(wd1, 2) - 1.0) * numerator[0];
+    denominator[2] = (1.0 - q * wd1 + pow(wd1, 2)) * numerator[0];
 
-    inputDelayBuf = {0};
-    outputDelayBuf = {0};
-    inputDelayBufWritePtr = 0;
-    outputDelayBufWritePtr = 0;
     // If the filter is a high pass filter, convert numerator
     // coefficients to reflect this
-    /*
     if(highpass) {
         numerator[0] = numerator[0] * pow(wd1, 2);
         numerator[1] = -numerator[1] * pow(wd1, 2);
         numerator[2] = numerator[2] * pow(wd1, 2);
     }
-    */
+    //inputDelayBuf = {0};
+    //outputDelayBuf = {0};
+    //active = true;
     // If the filter is using the Linkwitz-Riley filter structure,
     // convolve the numerator and denominator generated for the 2nd
     // order butterworth filter with themselves. This creates the 5
@@ -112,66 +121,70 @@ void CrossoverFilter::makeCrossover(
      * to allow standard time-domain implementations
      */
 
-    /*
     coefficients = IIRCoefficients(
-            sqrt_g + g_tan_half_bw, // b0
-            sqrt_g * two_cos_wc, // b1
-            sqrt_g - g_tan_half_bw, // b2
-            sqrt_g + tan_half_bw, // a0
-            sqrt_g * two_cos_wc, // a1
-            sqrt_g - tan_half_bw // a2
+            numerator[0],
+            numerator[1],
+            numerator[2],
+            denominator[0],
+            denominator[1],
+            denominator[2]
         );
-    */
 
-    //setCoefficients(coefficients);
-    //
+    setCoefficients(coefficients);
 
 }
 
+/*
 void CrossoverFilter::applyFilter(float* const samples, const int numSamples) noexcept {
     const SpinLock::ScopedLockType sl (processLock);
-    for(int i = 0; i < numSamples; ++i) {
-        const float in = samples[i];
-        // Increment the write pointer of the delay buffer storing input
-        // samples
-        ++inputDelayBufWritePtr;
-        // Wrap values to withink size of buffer. Prevents an integer
-        // overflow
-        inputDelayBufWritePtr = (inputDelayBufWritePtr+inputDelaySize)%inputDelaySize;
+    if(active){
+        for(int i = 0; i < numSamples; ++i) {
+            const float in = samples[i];
+            // Increment the write pointer of the delay buffer storing input
+            // samples
+            ++inputDelayBufWritePtr;
+            // Wrap values to within size of buffer. Prevents an integer
+            // overflow
+            inputDelayBufWritePtr = (inputDelayBufWritePtr+inputDelaySize)%inputDelaySize;
 
-        // Increment the write pointer of the delay buffer storing output
-        // samples
-        ++outputDelayBufWritePtr;
-        // Wrap values to withink size of buffer. Prevents an integer
-        // overflow
-        outputDelayBufWritePtr = (outputDelayBufWritePtr+outputDelaySize)%outputDelaySize;
+            // Increment the write pointer of the delay buffer storing output
+            // samples
+            ++outputDelayBufWritePtr;
+            // Wrap values to withink size of buffer. Prevents an integer
+            // overflow
+            outputDelayBufWritePtr = (outputDelayBufWritePtr+outputDelaySize)%outputDelaySize;
 
-        // Set the current value of the input delay buffer to the value of
-        // the sample provided to the function
-        inputDelayBuf[(inputDelayBufWritePtr+inputDelaySize)%inputDelaySize] = in;
+            // Set the current value of the input delay buffer to the value of
+            // the sample provided to the function
+            inputDelayBuf[(inputDelayBufWritePtr+inputDelaySize)%inputDelaySize] = in;
 
-        // Initialize a variable to store an output value
-        float y = 0;
-        // Accumulate each sample in the input delay buffer, multiplied by
-        // it's corresponding coefficient
-        for(unsigned int j = 0; j < inputDelaySize; j++) {
-            y += inputDelayBuf[(inputDelayBufWritePtr-j+inputDelaySize)%inputDelaySize] * numerator[j];
+            // Initialize a variable to store an output value
+            float y = 0;
+            // Accumulate each sample in the input delay buffer, multiplied by
+            // it's corresponding coefficient
+            for(unsigned int j = 0; j < inputDelaySize; j++) {
+                y += inputDelayBuf[(inputDelayBufWritePtr-j+inputDelaySize)%inputDelaySize] * numerator[j];
+            }
+            // decumulate each sample in the output delay buffer (aside from
+            // the current index), multiplied by it's corresponding coefficient
+            for(unsigned int k = 1; k < outputDelaySize; k++) {
+                y -= outputDelayBuf[(outputDelayBufWritePtr-k+outputDelaySize)%outputDelaySize] * denominator[k];
+            }
+            // Scale by first coefficient in the denominator (always 1 in
+            // current implementation, so added only for generalization of the
+            // method for future use)
+            y /= denominator[0];
+
+            // Taken from Juce's IIR filter code. Deals with some bug that I
+            // haven't looked in to.
+            JUCE_SNAP_TO_ZERO(y);
+
+            // Store the calculated output sample in the output sample delay
+            // buffer
+            outputDelayBuf[(outputDelayBufWritePtr+outputDelaySize)%outputDelaySize] = y;
+
+            samples[i] = y;
         }
-        // decumulate each sample in the output delay buffer (aside from
-        // the current index), multiplied by it's corresponding coefficient
-        for(unsigned int j = 1; j < outputDelaySize; j++) {
-            y -= outputDelayBuf[(outputDelayBufWritePtr-j+outputDelaySize)%outputDelaySize] * denominator[j];
-        }
-        // Scale by first coefficient in the denominator (always 1 in
-        // current implementation, so added only for generalization of the
-        // method for future use)
-        y /= denominator[0];
-
-        // Store the calculated output sample in the output sample delay
-        // buffer
-        outputDelayBuf[(outputDelayBufWritePtr+outputDelaySize)%outputDelaySize] = y;
-
-        samples[i] = y;
     }
 }
 
@@ -200,14 +213,6 @@ std::vector<double> CrossoverFilter::convolveCoefficients(std::vector<double> co
     }
     return out;
 }
-
-/* Copy coefficients from another object of the same class */
-
-/*
-void CrossoverFilter::copyCoefficientsFrom (const CrossoverFilter& other) noexcept
-{
-    setCoefficients(other.coefficients);
-    active = other.active;
-}
 */
 
+#undef JUCE_SNAP_TO_ZERO

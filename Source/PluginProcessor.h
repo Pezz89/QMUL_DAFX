@@ -108,6 +108,7 @@ private:
 
     std::vector<std::unique_ptr<CrossoverFilter>> crossoverFilters_;
     int numCrossoverFilters_;
+    bool linkwitzRiley_ = true;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Assignment1Processor);

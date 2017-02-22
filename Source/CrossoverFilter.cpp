@@ -134,7 +134,7 @@ void CrossoverFilter::makeCrossover(
 
 }
 
-/*
+
 void CrossoverFilter::applyFilter(float* const samples, const int numSamples) noexcept {
     const SpinLock::ScopedLockType sl (processLock);
     if(active){

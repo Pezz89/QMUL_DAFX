@@ -199,6 +199,9 @@ void Assignment1Processor::prepareToPlay (double sampleRate, int samplesPerBlock
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
 
+    //////////////////////////////////////////////////////////////////////////
+    // Crossover filter initialisation
+    //////////////////////////////////////////////////////////////////////////
     // Create as many filters as we have input channels
     numCrossoverFilters_ = getNumInputChannels();
     crossoverFilters_.resize(numCrossoverFilters_);
@@ -209,6 +212,20 @@ void Assignment1Processor::prepareToPlay (double sampleRate, int samplesPerBlock
 
     // Update the filter settings to work with the current parameters and sample rate
     updateFilter(sampleRate);
+
+    //////////////////////////////////////////////////////////////////////////
+    // Compressor initialisation
+    //////////////////////////////////////////////////////////////////////////
+    numCompressors_ = getNumInputChannels();
+    compressors_.resize(numCompressors_);
+    int bufferSize = getBlockSize();
+    // Create required number of compressors
+    if(compressors_.size() != 0) {
+        for(int i = 0; i < numCompressors_; i++)
+            compressors_[i] = std::make_unique<Compressor>(bufferSize);
+    }
+    // Update the compressor settings to work with the current parameters and sample rate
+    updateCompressor(sampleRate);
 }
 
 void Assignment1Processor::releaseResources()
@@ -234,11 +251,17 @@ void Assignment1Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& 
         // Run the samples through the IIR filter whose coefficients define the parametric
         // equaliser. See juce_IIRFilter.cpp for the implementation.
         crossoverFilters_[channel]->processSamples(channelData, numSamples);
-        if(linkwitzRiley) {
+        if(crossoverFilters_[channel]->linkwitzRileyActive()) {
             crossoverFilters_[channel]->processSamples(channelData, numSamples);
         }
     }
 
+    //TODO: Intergrate with code above
+    for (int m = 0 ; m < numOutputChannels ; ++m)
+    {
+        float* channelData = buffer.getWritePointer(m);
+        compressors_[m]->processSamples(channelData, numSamples);
+    }
     // Go through the remaining channels. In case we have more outputs
     // than inputs, or there aren't enough filters, we'll clear any
     // remaining output channels (which could otherwise contain garbage)
@@ -311,6 +334,11 @@ void Assignment1Processor::updateFilter(float sampleRate)
 {
     for(int i = 0; i < numCrossoverFilters_; i++)
         crossoverFilters_[i]->makeCrossover(centreFrequency_, sampleRate, false, false);
+}
+void Assignment1Processor::updateCompressor(float sampleRate)
+{
+    for(int i = 0; i < numCompressors_; i++)
+        compressors_[i]->makeCompressor(sampleRate, compressorONOFF);
 }
 
 //==============================================================================

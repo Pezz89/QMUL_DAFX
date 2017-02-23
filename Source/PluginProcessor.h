@@ -33,6 +33,7 @@
 #define _USE_MATH_DEFINES
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "CrossoverFilter.h"
+#include "Compressor.h"
 #include <vector>
 
 //==============================================================================
@@ -103,11 +104,15 @@ public:
     };
 
     float centreFrequency_, q_, gainDecibels_;
+    bool compressorONOFF = false;
 private:
     void updateFilter(float sampleRate);
+    void updateCompressor(float sampleRate);
 
     std::vector<std::unique_ptr<CrossoverFilter>> crossoverFilters_;
+    std::vector<std::unique_ptr<Compressor>> compressors_;
     int numCrossoverFilters_;
+    int numCompressors_;
     bool linkwitzRiley_ = true;
 
     //==============================================================================

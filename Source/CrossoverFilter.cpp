@@ -46,6 +46,7 @@ CrossoverFilter::CrossoverFilter(bool highpass, bool linkwitzRiley) noexcept  {
     //active = false;
     numerator.resize(3, 0);
     denominator.resize(3, 0);
+    this->linkwitzRiley = linkwitzRiley;
     /*
     // Allocate memory for delay line based on the number of
     // coefficients generated. Initialize vectors with values of 0.
@@ -67,6 +68,7 @@ void CrossoverFilter::makeCrossover(
 
     jassert (sampleRate > 0);
     jassert (crossoverFrequency > 0 && crossoverFrequency <= sampleRate * 0.5);
+    this->linkwitzRiley = linkwitzRiley;
 
     // This code was adapted from code originally submitted by the author for
     // the Real-time DSP module.
@@ -135,6 +137,7 @@ void CrossoverFilter::makeCrossover(
 }
 
 
+/*
 void CrossoverFilter::applyFilter(float* const samples, const int numSamples) noexcept {
     const SpinLock::ScopedLockType sl (processLock);
     if(active){

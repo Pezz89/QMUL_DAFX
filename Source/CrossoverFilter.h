@@ -60,6 +60,7 @@ public:
      */
     //void copyCoefficientsFrom (const CrossoverFilter& other) noexcept;
 
+    bool linkwitzRileyActive() { return linkwitzRiley; }
 
 private:
     //==============================================================================
@@ -74,6 +75,7 @@ private:
     std::vector<float>::size_type inputDelaySize, outputDelaySize;
     unsigned int inputDelayBufWritePtr, outputDelayBufWritePtr = 0;
     SpinLock processLock;
+    bool linkwitzRiley;
 
     JUCE_LEAK_DETECTOR (CrossoverFilter);
 

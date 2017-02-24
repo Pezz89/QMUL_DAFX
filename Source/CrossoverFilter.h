@@ -53,7 +53,7 @@ public:
         const bool highpass
     ) noexcept;
 
-    //void applyFilter(float* const samples, const int numSamples) noexcept;
+    void applyFilter(float* const samples, const int numSamples) noexcept;
 
 
     /** Makes this filter duplicate the set-up of another one.
@@ -70,9 +70,9 @@ private:
     std::vector<double> denominator;
     // Vector used for dynamic allocation of delay line size based on
     // filter type
-    std::vector<float> inputDelayBuf;
-    std::vector<float> outputDelayBuf;
-    std::vector<float>::size_type inputDelaySize, outputDelaySize;
+    std::vector<double> inputDelayBuf;
+    std::vector<double> outputDelayBuf;
+    std::vector<double>::size_type inputDelaySize, outputDelaySize;
     unsigned int inputDelayBufWritePtr, outputDelayBufWritePtr = 0;
     SpinLock processLock;
     bool linkwitzRiley;
@@ -80,7 +80,7 @@ private:
     JUCE_LEAK_DETECTOR (CrossoverFilter);
 
     // Convolution function adapted from: http://stackoverflow.com/questions/24518989/how-to-perform-1-dimensional-valid-convolution
-    //std::vector<double> convolveCoefficients(std::vector<double> const &f, std::vector<double> const &g);
+    std::vector<double> convolveCoefficients(std::vector<double> const &f, std::vector<double> const &g);
 };
 
 

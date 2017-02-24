@@ -265,7 +265,6 @@ void Assignment1Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& 
     //TODO: Intergrate with code above
     for (int m = 0 ; m < numOutputChannels ; ++m)
     {
-
         compressors_[m]->processSamples(buffer, numSamples);
     }
     // Go through the remaining channels. In case we have more outputs

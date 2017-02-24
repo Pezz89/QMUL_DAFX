@@ -42,12 +42,11 @@
  * implementation of a parametric equaliser.
  */
 
-CrossoverFilter::CrossoverFilter(bool highpass, bool linkwitzRiley) noexcept  {
-    //active = false;
+CrossoverFilter::CrossoverFilter(bool highpass, bool linkwitzRiley) noexcept {
+    active = false;
     numerator.resize(3, 0);
     denominator.resize(3, 0);
     this->linkwitzRiley = linkwitzRiley;
-    /*
     // Allocate memory for delay line based on the number of
     // coefficients generated. Initialize vectors with values of 0.
     inputDelayBuf.resize(int(numerator.size()), 0);
@@ -55,7 +54,6 @@ CrossoverFilter::CrossoverFilter(bool highpass, bool linkwitzRiley) noexcept  {
     // Store the delay size of delay buffers
     inputDelaySize = inputDelayBuf.size();
     outputDelaySize = outputDelayBuf.size();
-    */
 }
 
 void CrossoverFilter::makeCrossover(
@@ -65,13 +63,15 @@ void CrossoverFilter::makeCrossover(
         const bool highpass
     ) noexcept
 {
+    const SpinLock::ScopedLockType sl (processLock);
 
+    // TODO: Replace with proper logic
     jassert (sampleRate > 0);
     jassert (crossoverFrequency > 0 && crossoverFrequency <= sampleRate * 0.5);
     this->linkwitzRiley = linkwitzRiley;
 
     // This code was adapted from code originally submitted by the author for
-    // the Real-time DSP module.
+    // the Real-time DSP module assignment 1.
 
     // Deifine Q as the square root of 2
     static const double q = sqrt(2.0);
@@ -94,9 +94,9 @@ void CrossoverFilter::makeCrossover(
         numerator[1] = -numerator[1] * pow(wd1, 2);
         numerator[2] = numerator[2] * pow(wd1, 2);
     }
-    //inputDelayBuf = {0};
-    //outputDelayBuf = {0};
-    //active = true;
+    std::fill(inputDelayBuf.begin(), inputDelayBuf.end(), 0);
+    std::fill(outputDelayBuf.begin(), outputDelayBuf.end(), 0);
+    active = true;
     // If the filter is using the Linkwitz-Riley filter structure,
     // convolve the numerator and denominator generated for the 2nd
     // order butterworth filter with themselves. This creates the 5
@@ -109,40 +109,19 @@ void CrossoverFilter::makeCrossover(
     }
     */
 
-    /* Limit the bandwidth so we don't get a nonsense result from tan(B/2) */
-    /*
-    const double bandwidth = jmin(discreteFrequency / Q, M_PI * 0.99);
-    const double two_cos_wc = -2.0*cos(discreteFrequency);
-    const double tan_half_bw = tan(bandwidth / 2.0);
-    const double g_tan_half_bw = gainFactor * tan_half_bw;
-    const double sqrt_g = sqrt(gainFactor);
-    */
-
     /* setCoefficients() takes arguments: b0, b1, b2, a0, a1, a2
      * It will normalise the filter according to the value of a0
      * to allow standard time-domain implementations
      */
 
-    coefficients = IIRCoefficients(
-            numerator[0],
-            numerator[1],
-            numerator[2],
-            denominator[0],
-            denominator[1],
-            denominator[2]
-        );
-
-    setCoefficients(coefficients);
-
 }
 
-
-/*
 void CrossoverFilter::applyFilter(float* const samples, const int numSamples) noexcept {
     const SpinLock::ScopedLockType sl (processLock);
     if(active){
         for(int i = 0; i < numSamples; ++i) {
-            const float in = samples[i];
+            // Perform filtering using doubles for greater precision
+            const double in = samples[i];
             // Increment the write pointer of the delay buffer storing input
             // samples
             ++inputDelayBufWritePtr;
@@ -162,15 +141,15 @@ void CrossoverFilter::applyFilter(float* const samples, const int numSamples) no
             inputDelayBuf[(inputDelayBufWritePtr+inputDelaySize)%inputDelaySize] = in;
 
             // Initialize a variable to store an output value
-            float y = 0;
+            double y = 0;
             // Accumulate each sample in the input delay buffer, multiplied by
             // it's corresponding coefficient
-            for(unsigned int j = 0; j < inputDelaySize; j++) {
+            for(unsigned int j = 0; j < numerator.size(); j++) {
                 y += inputDelayBuf[(inputDelayBufWritePtr-j+inputDelaySize)%inputDelaySize] * numerator[j];
             }
             // decumulate each sample in the output delay buffer (aside from
             // the current index), multiplied by it's corresponding coefficient
-            for(unsigned int k = 1; k < outputDelaySize; k++) {
+            for(unsigned int k = 1; k < denominator.size(); k++) {
                 y -= outputDelayBuf[(outputDelayBufWritePtr-k+outputDelaySize)%outputDelaySize] * denominator[k];
             }
             // Scale by first coefficient in the denominator (always 1 in
@@ -179,7 +158,7 @@ void CrossoverFilter::applyFilter(float* const samples, const int numSamples) no
             y /= denominator[0];
 
             // Taken from Juce's IIR filter code. Deals with some bug that I
-            // haven't looked in to.
+            // haven't looked in to...
             JUCE_SNAP_TO_ZERO(y);
 
             // Store the calculated output sample in the output sample delay
@@ -216,6 +195,5 @@ std::vector<double> CrossoverFilter::convolveCoefficients(std::vector<double> co
     }
     return out;
 }
-*/
 
 #undef JUCE_SNAP_TO_ZERO

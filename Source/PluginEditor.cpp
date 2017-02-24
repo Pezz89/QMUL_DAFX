@@ -263,7 +263,7 @@ void Assignment1ProcessorEditor::updateBandwidthLabel()
     char str[64];
     Assignment1Processor* ourProcessor = getProcessor();
 
-    snprintf(str, 64, "Bandwidth: %.1f Hz", ourProcessor->centreFrequency_ / ourProcessor->q_);
+    snprintf(str, 64, "Bandw %.1f Hz", ourProcessor->centreFrequency_ / ourProcessor->q_);
 
     bandwidthLabel_.setText(str, dontSendNotification);
 }

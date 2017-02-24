@@ -244,10 +244,11 @@ void Assignment1Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& 
     const int numInputChannels = getNumInputChannels();     // How many input channels for our effect?
     const int numOutputChannels = getNumOutputChannels();   // How many output channels for our effect?
     const int numSamples = buffer.getNumSamples();          // How many samples in the buffer for this block?
+    const bool cOO = compressorONOFF;
     int channel;
 
+    updateCompressor(getSampleRate());
     // Go through each channel of audio that's passed in
-
     for (channel = 0; channel < jmin((int32)numInputChannels, numCrossoverFilters_); ++channel)
     {
         // channelData is an array of length numSamples which contains the audio for one channel
@@ -264,6 +265,7 @@ void Assignment1Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& 
     //TODO: Intergrate with code above
     for (int m = 0 ; m < numOutputChannels ; ++m)
     {
+
         compressors_[m]->processSamples(buffer, numSamples);
     }
     // Go through the remaining channels. In case we have more outputs

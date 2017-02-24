@@ -53,7 +53,7 @@ public:
         const bool highpass
     ) noexcept;
 
-    //void applyFilter(float* const samples, const int numSamples) noexcept;
+    void applyFilter(float* const samples, const int numSamples) noexcept;
 
 
     /** Makes this filter duplicate the set-up of another one.
@@ -78,7 +78,7 @@ private:
     JUCE_LEAK_DETECTOR (CrossoverFilter);
 
     // Convolution function adapted from: http://stackoverflow.com/questions/24518989/how-to-perform-1-dimensional-valid-convolution
-    //std::vector<double> convolveCoefficients(std::vector<double> const &f, std::vector<double> const &g);
+    std::vector<double> convolveCoefficients(std::vector<double> const &f, std::vector<double> const &g);
 };
 
 

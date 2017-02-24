@@ -233,7 +233,7 @@ void Assignment1Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& 
 
         // Run the samples through the IIR filter whose coefficients define the parametric
         // equaliser. See juce_IIRFilter.cpp for the implementation.
-        crossoverFilters_[channel]->processSamples(channelData, numSamples);
+        crossoverFilters_[channel]->applyFilter(channelData, numSamples);
     }
 
     // Go through the remaining channels. In case we have more outputs

@@ -43,10 +43,10 @@
  */
 
 CrossoverFilter::CrossoverFilter(bool highpass, bool linkwitzRiley) noexcept  {
-    //active = false;
+    active = false;
     numerator.resize(3, 0);
     denominator.resize(3, 0);
-    /*
+
     // Allocate memory for delay line based on the number of
     // coefficients generated. Initialize vectors with values of 0.
     inputDelayBuf.resize(int(numerator.size()), 0);
@@ -54,7 +54,6 @@ CrossoverFilter::CrossoverFilter(bool highpass, bool linkwitzRiley) noexcept  {
     // Store the delay size of delay buffers
     inputDelaySize = inputDelayBuf.size();
     outputDelaySize = outputDelayBuf.size();
-    */
 }
 
 void CrossoverFilter::makeCrossover(
@@ -64,12 +63,14 @@ void CrossoverFilter::makeCrossover(
         const bool highpass
     ) noexcept
 {
+    const SpinLock::ScopedLockType sl (processLock);
 
+    // TODO: Replace with proper logic
     jassert (sampleRate > 0);
     jassert (crossoverFrequency > 0 && crossoverFrequency <= sampleRate * 0.5);
 
     // This code was adapted from code originally submitted by the author for
-    // the Real-time DSP module.
+    // the Real-time DSP module assignment 1.
 
     // Deifine Q as the square root of 2
     static const double q = sqrt(2.0);
@@ -92,9 +93,9 @@ void CrossoverFilter::makeCrossover(
         numerator[1] = -numerator[1] * pow(wd1, 2);
         numerator[2] = numerator[2] * pow(wd1, 2);
     }
-    //inputDelayBuf = {0};
-    //outputDelayBuf = {0};
-    //active = true;
+    inputDelayBuf = {0};
+    outputDelayBuf = {0};
+    active = true;
     // If the filter is using the Linkwitz-Riley filter structure,
     // convolve the numerator and denominator generated for the 2nd
     // order butterworth filter with themselves. This creates the 5
@@ -107,34 +108,13 @@ void CrossoverFilter::makeCrossover(
     }
     */
 
-    /* Limit the bandwidth so we don't get a nonsense result from tan(B/2) */
-    /*
-    const double bandwidth = jmin(discreteFrequency / Q, M_PI * 0.99);
-    const double two_cos_wc = -2.0*cos(discreteFrequency);
-    const double tan_half_bw = tan(bandwidth / 2.0);
-    const double g_tan_half_bw = gainFactor * tan_half_bw;
-    const double sqrt_g = sqrt(gainFactor);
-    */
-
     /* setCoefficients() takes arguments: b0, b1, b2, a0, a1, a2
      * It will normalise the filter according to the value of a0
      * to allow standard time-domain implementations
      */
 
-    coefficients = IIRCoefficients(
-            numerator[0],
-            numerator[1],
-            numerator[2],
-            denominator[0],
-            denominator[1],
-            denominator[2]
-        );
-
-    setCoefficients(coefficients);
-
 }
 
-/*
 void CrossoverFilter::applyFilter(float* const samples, const int numSamples) noexcept {
     const SpinLock::ScopedLockType sl (processLock);
     if(active){
@@ -213,6 +193,5 @@ std::vector<double> CrossoverFilter::convolveCoefficients(std::vector<double> co
     }
     return out;
 }
-*/
 
 #undef JUCE_SNAP_TO_ZERO

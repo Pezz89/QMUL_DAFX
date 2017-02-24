@@ -42,15 +42,15 @@
  * implementation of a parametric equaliser.
  */
 
-CrossoverFilter::CrossoverFilter(bool highpass, bool linkwitzRiley) noexcept  {
+CrossoverFilter::CrossoverFilter(bool highpass, bool linkwitzRiley) noexcept {
     active = false;
     numerator.resize(3, 0);
     denominator.resize(3, 0);
 
     // Allocate memory for delay line based on the number of
     // coefficients generated. Initialize vectors with values of 0.
-    inputDelayBuf.resize(int(numerator.size()), 0);
-    outputDelayBuf.resize(int(denominator.size()), 0);
+    inputDelayBuf.resize(int(numerator.size()-1), 0);
+    outputDelayBuf.resize(int(denominator.size()-1), 0);
     // Store the delay size of delay buffers
     inputDelaySize = inputDelayBuf.size();
     outputDelaySize = outputDelayBuf.size();
@@ -93,8 +93,8 @@ void CrossoverFilter::makeCrossover(
         numerator[1] = -numerator[1] * pow(wd1, 2);
         numerator[2] = numerator[2] * pow(wd1, 2);
     }
-    inputDelayBuf = {0};
-    outputDelayBuf = {0};
+    std::fill(inputDelayBuf.begin(), inputDelayBuf.end(), 0);
+    std::fill(outputDelayBuf.begin(), outputDelayBuf.end(), 0);
     active = true;
     // If the filter is using the Linkwitz-Riley filter structure,
     // convolve the numerator and denominator generated for the 2nd
@@ -119,7 +119,8 @@ void CrossoverFilter::applyFilter(float* const samples, const int numSamples) no
     const SpinLock::ScopedLockType sl (processLock);
     if(active){
         for(int i = 0; i < numSamples; ++i) {
-            const float in = samples[i];
+            // Perform filtering using doubles for greater precision
+            const double in = samples[i];
             // Increment the write pointer of the delay buffer storing input
             // samples
             ++inputDelayBufWritePtr;
@@ -139,15 +140,15 @@ void CrossoverFilter::applyFilter(float* const samples, const int numSamples) no
             inputDelayBuf[(inputDelayBufWritePtr+inputDelaySize)%inputDelaySize] = in;
 
             // Initialize a variable to store an output value
-            float y = 0;
+            double y = 0;
             // Accumulate each sample in the input delay buffer, multiplied by
             // it's corresponding coefficient
-            for(unsigned int j = 0; j < inputDelaySize; j++) {
+            for(unsigned int j = 0; j < numerator.size(); j++) {
                 y += inputDelayBuf[(inputDelayBufWritePtr-j+inputDelaySize)%inputDelaySize] * numerator[j];
             }
             // decumulate each sample in the output delay buffer (aside from
             // the current index), multiplied by it's corresponding coefficient
-            for(unsigned int k = 1; k < outputDelaySize; k++) {
+            for(unsigned int k = 1; k < denominator.size(); k++) {
                 y -= outputDelayBuf[(outputDelayBufWritePtr-k+outputDelaySize)%outputDelaySize] * denominator[k];
             }
             // Scale by first coefficient in the denominator (always 1 in
@@ -156,7 +157,7 @@ void CrossoverFilter::applyFilter(float* const samples, const int numSamples) no
             y /= denominator[0];
 
             // Taken from Juce's IIR filter code. Deals with some bug that I
-            // haven't looked in to.
+            // haven't looked in to...
             JUCE_SNAP_TO_ZERO(y);
 
             // Store the calculated output sample in the output sample delay

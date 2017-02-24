@@ -69,9 +69,9 @@ private:
     std::vector<double> denominator;
     // Vector used for dynamic allocation of delay line size based on
     // filter type
-    std::vector<float> inputDelayBuf;
-    std::vector<float> outputDelayBuf;
-    std::vector<float>::size_type inputDelaySize, outputDelaySize;
+    std::vector<double> inputDelayBuf;
+    std::vector<double> outputDelayBuf;
+    std::vector<double>::size_type inputDelaySize, outputDelaySize;
     unsigned int inputDelayBufWritePtr, outputDelayBufWritePtr = 0;
     SpinLock processLock;
 

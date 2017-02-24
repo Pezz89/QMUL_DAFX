@@ -100,6 +100,7 @@ public:
         kCentreFrequencyParam = 0, /* Centre frequency in Hz */
         kQParam,                   /* Filter Q */
         kGainDecibelsParam,        /* Boost/cut in decibels */
+        kCompressorONOFF,
         kNumParameters
     };
 

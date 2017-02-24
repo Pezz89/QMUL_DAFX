@@ -169,12 +169,15 @@ Assignment1ProcessorEditor::Assignment1ProcessorEditor (Assignment1Processor* ow
     gainDecibelsLabel_.setFont(Font (11.0f));
 
     // add the triangular resizer component for the bottom-right of the UI
+    resizeLimits_.setSizeLimits(550, 100, 1000, 1000);
     addAndMakeVisible(resizer_ = new ResizableCornerComponent (this, &resizeLimits_));
-    resizeLimits_.setSizeLimits(550, 100, 550, 160);
 
     // set our component's initial size to be the last one that was stored in the filter's settings
+    /*
     setSize(ownerFilter->lastUIWidth_,
             ownerFilter->lastUIHeight_);
+            */
+    setSize(1000, 500);
 
     buttonONOFF.setClickingTogglesState(true);
 
@@ -198,7 +201,7 @@ void Assignment1ProcessorEditor::resized()
     gainDecibelsSlider_.setBounds(380, 20, 150, 40);
     bandwidthLabel_.setBounds(20, 70, 350, 20);
 
-    resizer_->setBounds(getWidth() - 16, getHeight() - 16, 16, 16);
+    resizer_->setBounds(550, 100, 1000, 1000);
 
     getProcessor()->lastUIWidth_ = getWidth();
     getProcessor()->lastUIHeight_ = getHeight();

@@ -49,21 +49,25 @@ class Compressor
                 yL_prev=y_l[i];
             }
         }
-        void processSamples(float* samples, int numSamples) {
 
+        void processSamples(AudioSampleBuffer& samples, int numSamples) {
+            threshold = -100;
+            ratio = 100;
             if (compressorONOFF)
             {
                 if ( (threshold< 0) )
                 {
-                    inputBuffer.clear(1,0,bufferSize);
+                    inputBuffer.clear();
+                    inputBuffer.addFrom(0,0,samples,0,0,bufferSize,1);
                     // compression : calculates the control voltage
-                    compress(inputBuffer,1);
+                    compress(inputBuffer,0);
                     // apply control voltage to the audio signal
                     for (int i = 0 ; i < numSamples ; ++i)
                     {
-                        samples[i] *= c[i];
+                        samples.getWritePointer(0)[i] *= c[i];
                     }
-                    inputBuffer.clear(1,0,bufferSize);
+                    inputBuffer.clear();
+                    inputBuffer.addFrom(0,0,samples,0,0,bufferSize,1);
                 }
             }
         }

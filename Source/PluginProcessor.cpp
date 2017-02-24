@@ -72,6 +72,7 @@ float Assignment1Processor::getParameter (int index)
         case kCentreFrequencyParam: return centreFrequency_;
         case kQParam:               return q_;
         case kGainDecibelsParam:    return gainDecibels_;
+        case kCompressorONOFF:    return compressorONOFF;
         default:                    return 0.0f;
     }
 }
@@ -95,6 +96,9 @@ void Assignment1Processor::setParameter (int index, float newValue)
             gainDecibels_ = newValue;
             updateFilter(getSampleRate());
             break;
+        case kCompressorONOFF:
+            compressorONOFF = newValue;
+            updateCompressor(getSampleRate());
         default:
             break;
     }
@@ -107,6 +111,7 @@ const String Assignment1Processor::getParameterName (int index)
         case kCentreFrequencyParam:  return "centre frequency";
         case kQParam:                return "Q";
         case kGainDecibelsParam:     return "gain (dB)";
+        case kCompressorONOFF:     return "compressorONOFF";
         default:                     break;
     }
 
@@ -259,8 +264,7 @@ void Assignment1Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& 
     //TODO: Intergrate with code above
     for (int m = 0 ; m < numOutputChannels ; ++m)
     {
-        float* channelData = buffer.getWritePointer(m);
-        compressors_[m]->processSamples(channelData, numSamples);
+        compressors_[m]->processSamples(buffer, numSamples);
     }
     // Go through the remaining channels. In case we have more outputs
     // than inputs, or there aren't enough filters, we'll clear any
@@ -298,6 +302,7 @@ void Assignment1Processor::getStateInformation (MemoryBlock& destData)
     xml.setAttribute("centreFrequency", centreFrequency_);
     xml.setAttribute("q", q_);
     xml.setAttribute("gainDecibels", gainDecibels_);
+    xml.setAttribute("compressorONOFF", compressorONOFF);
 
     // then use this helper function to stuff it into the binary blob and return it..
     copyXmlToBinary(xml, destData);
@@ -323,7 +328,10 @@ void Assignment1Processor::setStateInformation (const void* data, int sizeInByte
             centreFrequency_ = (float)xmlState->getDoubleAttribute("centreFrequency", centreFrequency_);
             q_ = (float)xmlState->getDoubleAttribute("q", q_);
             gainDecibels_ = (float)xmlState->getDoubleAttribute("gainDecibels", gainDecibels_);
+            compressorONOFF = (bool)xmlState->getDoubleAttribute("compressorONOFF", compressorONOFF);
             updateFilter(getSampleRate());
+            // Update the compressor settings to work with the current parameters and sample rate
+            updateCompressor(getSampleRate());
         }
     }
 }

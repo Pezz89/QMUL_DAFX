@@ -248,6 +248,7 @@ void Assignment1Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& 
     int channel;
 
     updateCompressor(getSampleRate());
+    updateFilter(getSampleRate());
     // Go through each channel of audio that's passed in
     for (channel = 0; channel < jmin((int32)numInputChannels, numCrossoverFilters_); ++channel)
     {
@@ -256,9 +257,9 @@ void Assignment1Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& 
 
         // Run the samples through the IIR filter whose coefficients define the parametric
         // equaliser. See juce_IIRFilter.cpp for the implementation.
-        crossoverFilters_[channel]->processSamples(channelData, numSamples);
+        crossoverFilters_[channel]->applyFilter(channelData, numSamples);
         if(crossoverFilters_[channel]->linkwitzRileyActive()) {
-            crossoverFilters_[channel]->processSamples(channelData, numSamples);
+            crossoverFilters_[channel]->applyFilter(channelData, numSamples);
         }
     }
 

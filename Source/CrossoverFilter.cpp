@@ -49,8 +49,8 @@ CrossoverFilter::CrossoverFilter(bool highpass, bool linkwitzRiley) noexcept {
     this->linkwitzRiley = linkwitzRiley;
     // Allocate memory for delay line based on the number of
     // coefficients generated. Initialize vectors with values of 0.
-    inputDelayBuf.resize(int(numerator.size()), 0);
-    outputDelayBuf.resize(int(denominator.size()), 0);
+    inputDelayBuf.resize(int(numerator.size())-1, 0);
+    outputDelayBuf.resize(int(denominator.size())-1, 0);
     // Store the delay size of delay buffers
     inputDelaySize = inputDelayBuf.size();
     outputDelaySize = outputDelayBuf.size();

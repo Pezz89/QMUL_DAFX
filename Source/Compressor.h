@@ -53,7 +53,6 @@ class Compressor
         void processSamples(AudioSampleBuffer& samples, int numSamples) {
             threshold = -100;
             ratio = 100;
-            if (compressorONOFF) jassertfalse;
             if (compressorONOFF)
             {
                 if ( (threshold< 0) )

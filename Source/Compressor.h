@@ -51,22 +51,22 @@ class Compressor
         }
 
         void processSamples(AudioSampleBuffer& samples, int numSamples, int channel) {
-            if (true)
+            if (compressorONOFF)
             {
-                threshold = -20;
                 if ( (threshold< 0) )
                 {
                     inputBuffer.clear();
-                    inputBuffer.addFrom(0,0,samples,0,0,bufferSize,1);
+                    inputBuffer.addFrom(0, 0, samples, channel, 0, bufferSize);
                     // compression : calculates the control voltage
-                    compress(inputBuffer,channel);
+                    compress(inputBuffer,0);
                     // apply control voltage to the audio signal
                     for (int i = 0 ; i < numSamples ; ++i)
                     {
-                        samples.getWritePointer(0)[i] *= c[i];
+                        samples.getWritePointer(channel)[i] *= c[i];
                     }
                     inputBuffer.clear();
-                    inputBuffer.addFrom(0,0,samples,0,0,bufferSize,1);
+                    inputBuffer.addFrom(0, 0, samples, channel, 0, bufferSize);
+                    std::cout << channel << std::endl;
                 }
             }
         }

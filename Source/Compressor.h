@@ -51,8 +51,6 @@ class Compressor
         }
 
         void processSamples(AudioSampleBuffer& samples, int numSamples) {
-            threshold = -100;
-            ratio = 100;
             if (compressorONOFF)
             {
                 if ( (threshold< 0) )
@@ -90,11 +88,15 @@ class Compressor
 
         void makeCompressor(
                 const int sr,
-                const bool cOO
+                const bool cOO,
+                const float rat,
+                const float thresh
             )
         {
             sampleRate = sr;
             compressorONOFF = cOO;
+            threshold = thresh;
+            ratio = rat;
         }
         //////////////////////////////////////////////
         float getThreshold()

@@ -50,18 +50,17 @@ Assignment1Processor::Assignment1Processor()
     }
 
     for(int i = 0; i < numCompPerChannel; i++) {
-        s1 = "comp" + std::to_string(i+1) + "active";
-        s2 = "Compressor " + std::to_string(i+1) + " Active";
+        std::string s1 = "comp" + std::to_string(i+1) + "active";
+        std::string s2 = "Compressor " + std::to_string(i+1) + " Active";
         addParameter (compressorActive[i] = new AudioParameterBool (s1, s2, false));
 
-        std::string s1 = "comp" + std::to_string(i+1) + "thresh";
-        std::string s2 = "Compressor " + std::to_string(i+1) + " Threshold";
-        addParameter (compressorThresh[i] = new AudioParameterFloat (s1, s2, 0.0f, 1.0f, 0.5f));
+        s1 = "comp" + std::to_string(i+1) + "thresh";
+        s2 = "Compressor " + std::to_string(i+1) + " Threshold";
+        addParameter (compressorThresh[i] = new AudioParameterFloat (s1, s2, NormalisableRange<float>(-120.0f, 0.0f, 0.0f, 1.0f), 0.0f));
 
         s1 = "comp" + std::to_string(i+1) + "ratio";
         s2 = "Compressor " + std::to_string(i+1) + " Ratio";
-        addParameter (compressorRatio[i] = new AudioParameterFloat (s1, s2, 0.0f, 1.0f, 0.5f));
-
+        addParameter (compressorRatio[i] = new AudioParameterFloat (s1, s2, NormalisableRange<float>(0.0f, 10.0f, 0.0f, 1.0f), 0.0f));
     }
 }
 
@@ -316,8 +315,8 @@ void Assignment1Processor::updateFilter(float sampleRate)
 {
     for(int i = 0; i < numChannels; i++) {
         for(int j = 0; j < numXOverPerChannel; j+=2) {
-            crossoverFilters_[i][j]->makeCrossover(centreFrequency_, sampleRate, true, false);
-            crossoverFilters_[i][j+1]->makeCrossover(centreFrequency_, sampleRate, false, false);
+            crossoverFilters_[i][j]->makeCrossover(*crossoverFreq[i], sampleRate, true, false);
+            crossoverFilters_[i][j+1]->makeCrossover(*crossoverFreq[i], sampleRate, false, false);
         }
     }
 }
@@ -325,7 +324,7 @@ void Assignment1Processor::updateCompressor(float sampleRate)
 {
     for(int i = 0; i < numChannels; i++) {
         for(int j = 0; j < numCompPerChannel; j+=2) {
-            compressors_[i][j]->makeCompressor(sampleRate, compressorONOFF);
+            compressors_[i][j]->makeCompressor(sampleRate, *compressorActive[i], *compressorRatio[i], *compressorThresh[i]);
         }
     }
 }

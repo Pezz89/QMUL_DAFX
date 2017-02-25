@@ -50,6 +50,10 @@ Assignment1Processor::Assignment1Processor()
     }
 
     for(int i = 0; i < numCompPerChannel; i++) {
+        s1 = "comp" + std::to_string(i+1) + "active";
+        s2 = "Compressor " + std::to_string(i+1) + " Active";
+        addParameter (compressorActive[i] = new AudioParameterBool (s1, s2, false));
+
         std::string s1 = "comp" + std::to_string(i+1) + "thresh";
         std::string s2 = "Compressor " + std::to_string(i+1) + " Threshold";
         addParameter (compressorThresh[i] = new AudioParameterFloat (s1, s2, 0.0f, 1.0f, 0.5f));
@@ -58,9 +62,6 @@ Assignment1Processor::Assignment1Processor()
         s2 = "Compressor " + std::to_string(i+1) + " Ratio";
         addParameter (compressorRatio[i] = new AudioParameterFloat (s1, s2, 0.0f, 1.0f, 0.5f));
 
-        s1 = "comp" + std::to_string(i+1) + "active";
-        s2 = "Compressor " + std::to_string(i+1) + " Active";
-        addParameter (compressorActive[i] = new AudioParameterBool (s1, s2, false));
     }
 }
 
@@ -263,6 +264,7 @@ void Assignment1Processor::getStateInformation (MemoryBlock& destData)
     // as intermediaries to make it easy to save and load complex data.
 
     // Create an outer XML element..
+    /*
     XmlElement xml("C4DMPLUGINSETTINGS");
 
     // add some attributes to it..
@@ -275,6 +277,7 @@ void Assignment1Processor::getStateInformation (MemoryBlock& destData)
 
     // then use this helper function to stuff it into the binary blob and return it..
     copyXmlToBinary(xml, destData);
+    */
 }
 
 void Assignment1Processor::setStateInformation (const void* data, int sizeInBytes)
@@ -282,6 +285,7 @@ void Assignment1Processor::setStateInformation (const void* data, int sizeInByte
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
 
+    /*
     // This getXmlFromBinary() helper function retrieves our XML from the binary blob..
     ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
 
@@ -303,6 +307,7 @@ void Assignment1Processor::setStateInformation (const void* data, int sizeInByte
             updateCompressor(getSampleRate());
         }
     }
+    */
 }
 
 //==============================================================================

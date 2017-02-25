@@ -114,9 +114,10 @@ private:
     void updateFilter(float sampleRate);
     void updateCompressor(float sampleRate);
 
-    std::vector<std::unique_ptr<CrossoverFilter>> crossoverFilters_;
-    std::vector<std::unique_ptr<Compressor>> compressors_;
+    std::vector<std::vector<std::unique_ptr<CrossoverFilter>>> crossoverFilters_;
+    std::vector<std::vector<std::unique_ptr<Compressor>>> compressors_;
 
+    int numChannels;
     int numCompPerChannel;
     int numXOverPerChannel;
     std::vector<AudioParameterFloat*> crossoverFreq;

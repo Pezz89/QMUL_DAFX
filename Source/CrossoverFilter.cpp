@@ -66,8 +66,10 @@ void CrossoverFilter::makeCrossover(
     const SpinLock::ScopedLockType sl (processLock);
 
     // TODO: Replace with proper logic
-    jassert (sampleRate > 0);
-    jassert (crossoverFrequency > 0 && crossoverFrequency <= sampleRate * 0.5);
+    if(sampleRate > 0)
+        return;
+    if(crossoverFrequency > 0 && crossoverFrequency <= sampleRate * 0.5)
+        return;
     this->linkwitzRiley = linkwitzRiley;
 
     // This code was adapted from code originally submitted by the author for

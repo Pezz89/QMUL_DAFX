@@ -34,7 +34,9 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "CrossoverFilter.h"
 #include "Compressor.h"
+#include "GenericEditor.h"
 #include <vector>
+#include <array>
 
 //==============================================================================
 /**
@@ -59,6 +61,7 @@ public:
     //==============================================================================
     const String getName() const;
 
+    /*
     int getNumParameters();
 
     float getParameter (int index);
@@ -66,6 +69,7 @@ public:
 
     const String getParameterName (int index);
     const String getParameterText (int index);
+    */
 
     const String getInputChannelName (int channelIndex) const;
     const String getOutputChannelName (int channelIndex) const;
@@ -112,6 +116,14 @@ private:
 
     std::vector<std::unique_ptr<CrossoverFilter>> crossoverFilters_;
     std::vector<std::unique_ptr<Compressor>> compressors_;
+
+    int numCompPerChannel;
+    int numXOverPerChannel;
+    std::vector<AudioParameterFloat*> crossoverFreq;
+    std::vector<AudioParameterFloat*> compressorThresh;
+    std::vector<AudioParameterFloat*> compressorRatio;
+    std::vector<AudioParameterBool*> compressorActive;
+
     int numCrossoverFilters_;
     int numCompressors_;
     bool linkwitzRiley_ = true;

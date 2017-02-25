@@ -72,7 +72,7 @@ Assignment1ProcessorEditor::Assignment1ProcessorEditor (Assignment1Processor* ow
     addAndMakeVisible (&sliderThreshold);
     sliderThreshold.setRange (-60, 0, -60);
     sliderThreshold.setSliderStyle (Slider::RotaryVerticalDrag);
-    sliderThreshold.setTextBoxStyle (Slider::TextBoxBelow, false, 80, 20);
+    //sliderThreshold.setTextBoxStyle (Slider::TextBoxBelow, false, 80, 20);
     sliderThreshold.addListener (this);
 
     addAndMakeVisible (&label2);
@@ -85,7 +85,7 @@ Assignment1ProcessorEditor::Assignment1ProcessorEditor (Assignment1Processor* ow
     addAndMakeVisible (&sliderRatio);
     sliderRatio.setRange (1, 100, 0.1);
     sliderRatio.setSliderStyle (Slider::RotaryVerticalDrag);
-    sliderRatio.setTextBoxStyle (Slider::TextBoxBelow, false, 80, 20);
+    //sliderRatio.setTextBoxStyle (Slider::TextBoxBelow, false, 80, 20);
     sliderRatio.addListener (this);
 
     addAndMakeVisible (&label3);
@@ -98,7 +98,7 @@ Assignment1ProcessorEditor::Assignment1ProcessorEditor (Assignment1Processor* ow
     addAndMakeVisible (&sliderGain);
     sliderGain.setRange (0, 40, 1);
     sliderGain.setSliderStyle (Slider::RotaryVerticalDrag);
-    sliderGain.setTextBoxStyle (Slider::TextBoxBelow, false, 80, 20);
+    //sliderGain.setTextBoxStyle (Slider::TextBoxBelow, false, 80, 20);
     sliderGain.addListener (this);
 
     addAndMakeVisible (&label7);
@@ -111,7 +111,7 @@ Assignment1ProcessorEditor::Assignment1ProcessorEditor (Assignment1Processor* ow
     addAndMakeVisible (&sliderAttack);
     sliderAttack.setRange (0.1, 80, 0.1);
     sliderAttack.setSliderStyle (Slider::RotaryVerticalDrag);
-    sliderAttack.setTextBoxStyle (Slider::TextBoxBelow, false, 80, 20);
+    //sliderAttack.setTextBoxStyle (Slider::TextBoxBelow, false, 80, 20);
     sliderAttack.addListener (this);
 
     addAndMakeVisible (&label5);
@@ -124,7 +124,7 @@ Assignment1ProcessorEditor::Assignment1ProcessorEditor (Assignment1Processor* ow
     addAndMakeVisible (&sliderRelease);
     sliderRelease.setRange (0.1, 1000, 0.1);
     sliderRelease.setSliderStyle (Slider::RotaryVerticalDrag);
-    sliderRelease.setTextBoxStyle (Slider::TextBoxBelow, false, 80, 20);
+    //sliderRelease.setTextBoxStyle (Slider::TextBoxBelow, false, 80, 20);
     sliderRelease.addListener (this);
 
     addAndMakeVisible (&label6);
@@ -201,23 +201,24 @@ void Assignment1ProcessorEditor::resized()
     gainDecibelsSlider_.setBounds(380, 20, 150, 40);
     bandwidthLabel_.setBounds(20, 70, 350, 20);
 
-    resizer_->setBounds(550, 100, 1000, 1000);
 
     getProcessor()->lastUIWidth_ = getWidth();
     getProcessor()->lastUIHeight_ = getHeight();
 
     buttonONOFF.setBounds (17, 55, 125, 25);
     label.setBounds (-3, 0, 500, 49);
-    sliderThreshold.setBounds (533, 182, 175, 98);
+    sliderThreshold.setBounds (580, 20, 150, 40);
     label2.setBounds (588, 152, 91, 24);
-    sliderRatio.setBounds (5, 182, 175, 98);
+    sliderRatio.setBounds (780, 20, 150, 40);
     label3.setBounds (132, 152, 50, 24);
-    sliderGain.setBounds (595, 77, 56, 70);
+    sliderGain.setBounds (595, 77, 150, 40);
     label7.setBounds (604, 52, 52, 24);
-    sliderAttack.setBounds (196, 182, 175, 98);
+    sliderAttack.setBounds (196, 182, 150, 40);
     label5.setBounds (229, 152, 120, 24);
-    sliderRelease.setBounds (365, 182, 175, 98);
+    sliderRelease.setBounds (365, 182, 150, 40);
     label6.setBounds (391, 152, 120, 24);
+
+    resizer_->setBounds(550, 100, 1000, 1000);
 }
 
 //==============================================================================

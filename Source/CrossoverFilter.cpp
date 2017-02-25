@@ -108,12 +108,6 @@ void CrossoverFilter::makeCrossover(
         denominator = convolveCoefficients(denominator, denominator);
     }
     */
-
-    /* setCoefficients() takes arguments: b0, b1, b2, a0, a1, a2
-     * It will normalise the filter according to the value of a0
-     * to allow standard time-domain implementations
-     */
-
 }
 
 void CrossoverFilter::applyFilter(float* const samples, const int numSamples) noexcept {

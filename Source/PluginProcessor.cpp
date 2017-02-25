@@ -28,23 +28,40 @@
 */
 
 #include "PluginProcessor.h"
-#include "PluginEditor.h"
 #include <memory>
 
+#include <string>
 
 //==============================================================================
 Assignment1Processor::Assignment1Processor()
 {
-    // Set default values:
-    centreFrequency_ = 1000.0;
-    q_ = 2.0;
-    gainDecibels_ = 0.0;
+    numXOverPerChannel = 3;
+    numCompPerChannel = 4;
 
-    // Initialise the filters later when we know how many channels
-    numCrossoverFilters_ = 0;
+    crossoverFreq.resize(numXOverPerChannel);
+    compressorThresh.resize(numCompPerChannel);
+    compressorRatio.resize(numCompPerChannel);
+    compressorActive.resize(numCompPerChannel);
 
-    lastUIWidth_ = 550;
-    lastUIHeight_ = 100;
+    for(int i = 0; i < numXOverPerChannel; i++) {
+        std::string s1 = "crossover" + std::to_string(i+1) + "Freq";
+        std::string s2 = "Crossover " + std::to_string(i+1) + " Frequency";
+        addParameter (crossoverFreq[i] = new AudioParameterFloat (s1, s2, NormalisableRange<float>(20.0f, 20000.0f, 0.0f, 0.0f), 1000.0f));
+    }
+
+    for(int i = 0; i < numCompPerChannel; i++) {
+        std::string s1 = "comp" + std::to_string(i+1) + "thresh";
+        std::string s2 = "Compressor " + std::to_string(i+1) + " Threshold";
+        addParameter (compressorThresh[i] = new AudioParameterFloat (s1, s2, 0.0f, 1.0f, 0.5f));
+
+        s1 = "comp" + std::to_string(i+1) + "ratio";
+        s2 = "Compressor " + std::to_string(i+1) + " Ratio";
+        addParameter (compressorRatio[i] = new AudioParameterFloat (s1, s2, 0.0f, 1.0f, 0.5f));
+
+        s1 = "comp" + std::to_string(i+1) + "active";
+        s2 = "Compressor " + std::to_string(i+1) + " Active";
+        addParameter (compressorActive[i] = new AudioParameterBool (s1, s2, false));
+    }
 }
 
 Assignment1Processor::~Assignment1Processor()
@@ -55,72 +72,6 @@ Assignment1Processor::~Assignment1Processor()
 const String Assignment1Processor::getName() const
 {
     return JucePlugin_Name;
-}
-
-int Assignment1Processor::getNumParameters()
-{
-    return kNumParameters;
-}
-
-float Assignment1Processor::getParameter (int index)
-{
-    // This method will be called by the host, probably on the audio thread, so
-    // it's absolutely time-critical. Don't use critical sections or anything
-    // UI-related, or anything at all that may block in any way!
-    switch (index)
-    {
-        case kCentreFrequencyParam: return centreFrequency_;
-        case kQParam:               return q_;
-        case kGainDecibelsParam:    return gainDecibels_;
-        case kCompressorONOFF:    return compressorONOFF;
-        default:                    return 0.0f;
-    }
-}
-
-void Assignment1Processor::setParameter (int index, float newValue)
-{
-    // This method will be called by the host, probably on the audio thread, so
-    // it's absolutely time-critical. Don't use critical sections or anything
-    // UI-related, or anything at all that may block in any way!
-    switch (index)
-    {
-        case kCentreFrequencyParam:
-            centreFrequency_ = newValue;
-            updateFilter(getSampleRate());
-            break;
-        case kQParam:
-            q_ = newValue;
-            updateFilter(getSampleRate());
-            break;
-        case kGainDecibelsParam:
-            gainDecibels_ = newValue;
-            updateFilter(getSampleRate());
-            break;
-        case kCompressorONOFF:
-            compressorONOFF = newValue;
-            updateCompressor(getSampleRate());
-        default:
-            break;
-    }
-}
-
-const String Assignment1Processor::getParameterName (int index)
-{
-    switch (index)
-    {
-        case kCentreFrequencyParam:  return "centre frequency";
-        case kQParam:                return "Q";
-        case kGainDecibelsParam:     return "gain (dB)";
-        case kCompressorONOFF:     return "compressorONOFF";
-        default:                     break;
-    }
-
-    return String::empty;
-}
-
-const String Assignment1Processor::getParameterText (int index)
-{
-    return String (getParameter (index), 2);
 }
 
 const String Assignment1Processor::getInputChannelName (int channelIndex) const
@@ -283,10 +234,8 @@ bool Assignment1Processor::hasEditor() const
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* Assignment1Processor::createEditor()
-{
-    return new Assignment1ProcessorEditor (this);
-}
+AudioProcessorEditor* Assignment1Processor::createEditor() { return new GenericEditor (*this); }
+
 
 //==============================================================================
 void Assignment1Processor::getStateInformation (MemoryBlock& destData)

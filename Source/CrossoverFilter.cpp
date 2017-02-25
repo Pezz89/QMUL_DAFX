@@ -42,7 +42,7 @@
  * implementation of a parametric equaliser.
  */
 
-CrossoverFilter::CrossoverFilter(bool highpass, bool linkwitzRiley) noexcept {
+CrossoverFilter::CrossoverFilter(bool highpass, bool linkwitzRiley) {
     active = false;
     numerator.resize(3, 0);
     denominator.resize(3, 0);

@@ -167,10 +167,11 @@ void Assignment1Processor::prepareToPlay (double sampleRate, int samplesPerBlock
         it.resize(numXOverPerChannel * 2);
     }
     if(crossoverFilters_.size() != 0) {
-        for(int i = 0; i < numCrossoverFilters_; i++) {
-            for(int j = 0; j < numXOverPerChannel*2; j+=2) {
-                crossoverFilters_[i][j] = std::make_unique<CrossoverFilter>(false, false);
-                crossoverFilters_[i][j+1] = std::make_unique<CrossoverFilter>(true, false);
+        std::vector<std::vector<std::unique_ptr<CrossoverFilter>> >::iterator row;
+        std::vector<std::unique_ptr<CrossoverFilter>>::iterator col;
+        for (row = crossoverFilters_.begin(); row != crossoverFilters_.end(); row++) {
+            for (col = row->begin(); col != row->end(); col++) {
+                *col = std::make_unique<CrossoverFilter>(false, false);
             }
         }
     }
@@ -191,9 +192,11 @@ void Assignment1Processor::prepareToPlay (double sampleRate, int samplesPerBlock
     int bufferSize = getBlockSize();
     // Create required number of compressors
     if(compressors_.size() != 0) {
-        for(int i = 0; i < numChannels; i++) {
-            for(int j = 0; j < numCompPerChannel; j++) {
-            compressors_[i][j] = std::make_unique<Compressor>(bufferSize);
+        std::vector<std::vector<std::unique_ptr<Compressor>> >::iterator row;
+        std::vector<std::unique_ptr<Compressor>>::iterator col;
+        for (row = compressors_.begin(); row != compressors_.end(); row++) {
+            for (col = row->begin(); col != row->end(); col++) {
+                *col = std::make_unique<Compressor>(bufferSize);
             }
         }
     }
@@ -203,7 +206,9 @@ void Assignment1Processor::prepareToPlay (double sampleRate, int samplesPerBlock
 
 void Assignment1Processor::releaseResources()
 {
-    numCrossoverFilters_ = 0;
+    compressors_.clear();
+    crossoverFilters_.clear();
+
 }
 
 void Assignment1Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
@@ -212,29 +217,26 @@ void Assignment1Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& 
     const int numInputChannels = getNumInputChannels();     // How many input channels for our effect?
     const int numOutputChannels = getNumOutputChannels();   // How many output channels for our effect?
     const int numSamples = buffer.getNumSamples();          // How many samples in the buffer for this block?
-    const bool cOO = compressorONOFF;
     int channel;
 
     updateCompressor(getSampleRate());
     updateFilter(getSampleRate());
     // Go through each channel of audio that's passed in
-    for (channel = 0; channel < jmin((int32)numInputChannels, numCrossoverFilters_); ++channel)
+    for (channel = 0; channel < numInputChannels; ++channel)
     {
         // channelData is an array of length numSamples which contains the audio for one channel
         float* channelData = buffer.getWritePointer(channel);
 
+        /*
         for(int i = 0; i < numXOverPerChannel; i++) {
             crossoverFilters_[channel][i]->applyFilter(channelData, numSamples);
             if(crossoverFilters_[channel][i]->linkwitzRileyActive()) {
                 crossoverFilters_[channel][i]->applyFilter(channelData, numSamples);
             }
         }
-    }
-
-    //TODO: Intergrate with code above
-    for (int m = 0 ; m < numOutputChannels ; ++m) {
-        for(int j = 0; j < numCompPerChannel; j+=2) {
-            compressors_[m][j]->processSamples(buffer, numSamples);
+        */
+        for(int j = 0; j < numCompPerChannel; j++) {
+            compressors_[channel][j]->processSamples(buffer, numSamples, channel);
         }
     }
     // Go through the remaining channels. In case we have more outputs
@@ -258,55 +260,10 @@ AudioProcessorEditor* Assignment1Processor::createEditor() { return new GenericE
 //==============================================================================
 void Assignment1Processor::getStateInformation (MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
-
-    // Create an outer XML element..
-    /*
-    XmlElement xml("C4DMPLUGINSETTINGS");
-
-    // add some attributes to it..
-    xml.setAttribute("uiWidth", lastUIWidth_);
-    xml.setAttribute("uiHeight", lastUIHeight_);
-    xml.setAttribute("centreFrequency", centreFrequency_);
-    xml.setAttribute("q", q_);
-    xml.setAttribute("gainDecibels", gainDecibels_);
-    xml.setAttribute("compressorONOFF", compressorONOFF);
-
-    // then use this helper function to stuff it into the binary blob and return it..
-    copyXmlToBinary(xml, destData);
-    */
 }
 
 void Assignment1Processor::setStateInformation (const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
-
-    /*
-    // This getXmlFromBinary() helper function retrieves our XML from the binary blob..
-    ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
-
-    if(xmlState != 0)
-    {
-        // make sure that it's actually our type of XML object..
-        if(xmlState->hasTagName("C4DMPLUGINSETTINGS"))
-        {
-            // ok, now pull out our parameters..
-            lastUIWidth_  = xmlState->getIntAttribute("uiWidth", lastUIWidth_);
-            lastUIHeight_ = xmlState->getIntAttribute("uiHeight", lastUIHeight_);
-
-            centreFrequency_ = (float)xmlState->getDoubleAttribute("centreFrequency", centreFrequency_);
-            q_ = (float)xmlState->getDoubleAttribute("q", q_);
-            gainDecibels_ = (float)xmlState->getDoubleAttribute("gainDecibels", gainDecibels_);
-            compressorONOFF = (bool)xmlState->getDoubleAttribute("compressorONOFF", compressorONOFF);
-            updateFilter(getSampleRate());
-            // Update the compressor settings to work with the current parameters and sample rate
-            updateCompressor(getSampleRate());
-        }
-    }
-    */
 }
 
 //==============================================================================
@@ -314,17 +271,17 @@ void Assignment1Processor::setStateInformation (const void* data, int sizeInByte
 void Assignment1Processor::updateFilter(float sampleRate)
 {
     for(int i = 0; i < numChannels; i++) {
-        for(int j = 0; j < numXOverPerChannel; j+=2) {
-            crossoverFilters_[i][j]->makeCrossover(*crossoverFreq[i], sampleRate, true, false);
-            crossoverFilters_[i][j+1]->makeCrossover(*crossoverFreq[i], sampleRate, false, false);
+        for(int j = 0; j < numXOverPerChannel; j++) {
+            crossoverFilters_[i][j]->makeCrossover(*crossoverFreq[j], sampleRate, true, false);
+            crossoverFilters_[i][j+1]->makeCrossover(*crossoverFreq[j], sampleRate, false, false);
         }
     }
 }
 void Assignment1Processor::updateCompressor(float sampleRate)
 {
     for(int i = 0; i < numChannels; i++) {
-        for(int j = 0; j < numCompPerChannel; j+=2) {
-            compressors_[i][j]->makeCompressor(sampleRate, *compressorActive[i], *compressorRatio[i], *compressorThresh[i]);
+        for(int j = 0; j < numCompPerChannel; j++) {
+            compressors_[i][j]->makeCompressor(sampleRate, *compressorActive[j], *compressorRatio[j], *compressorThresh[j]);
         }
     }
 }

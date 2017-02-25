@@ -29,6 +29,18 @@
 		"tags" : "",
 		"boxes" : [ 			{
 				"box" : 				{
+					"id" : "obj-6",
+					"maxclass" : "spectroscope~",
+					"numinlets" : 2,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 266.0, 264.0, 300.0, 100.0 ],
+					"presentation_rect" : [ 270.0, 267.0, 0.0, 0.0 ]
+				}
+
+			}
+, 			{
+				"box" : 				{
 					"id" : "obj-4",
 					"maxclass" : "spectroscope~",
 					"numinlets" : 2,
@@ -71,7 +83,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 226.0, 253.0, 380.0, 18.0 ],
+					"patching_rect" : [ 226.0, 182.0, 380.0, 18.0 ],
 					"text" : "plug /Users/samuelperry/Library/Audio/Plug-Ins/VST/Assignment1.vst"
 				}
 
@@ -116,6 +128,15 @@
 					"disabled" : 0,
 					"hidden" : 0,
 					"source" : [ "obj-1", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-6", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-1", 1 ]
 				}
 
 			}

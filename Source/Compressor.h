@@ -50,15 +50,16 @@ class Compressor
             }
         }
 
-        void processSamples(AudioSampleBuffer& samples, int numSamples) {
-            if (compressorONOFF)
+        void processSamples(AudioSampleBuffer& samples, int numSamples, int channel) {
+            if (true)
             {
+                threshold = -20;
                 if ( (threshold< 0) )
                 {
                     inputBuffer.clear();
                     inputBuffer.addFrom(0,0,samples,0,0,bufferSize,1);
                     // compression : calculates the control voltage
-                    compress(inputBuffer,0);
+                    compress(inputBuffer,channel);
                     // apply control voltage to the audio signal
                     for (int i = 0 ; i < numSamples ; ++i)
                     {

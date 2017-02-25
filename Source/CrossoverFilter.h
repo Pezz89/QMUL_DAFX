@@ -44,8 +44,8 @@ class CrossoverFilter : public IIRFilter
 public:
     //==============================================================================
 
-    CrossoverFilter(bool highpass, bool linkwitzRiley) noexcept;
-    ~CrossoverFilter() noexcept {}
+    CrossoverFilter(bool highpass, bool linkwitzRiley);
+    ~CrossoverFilter() {}
     void makeCrossover (
         const double crossoverFrequency, 
         const int sampleRate, 

@@ -243,8 +243,8 @@ void Assignment1Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& 
         // channelData is an array of length numSamples which contains the audio for one channel
         float* channelData = buffer.getWritePointer(channel);
 
-        for(int i = 0; i < numXOverPerChannel; i++) {
-            crossoverFilters_[channel][i*2]->applyFilter(channelData, numSamples);
+        for(int i = 0; i < numXOverPerChannel*2; i++) {
+            crossoverFilters_[channel][i]->applyFilter(channelData, numSamples);
             if(crossoverFilters_[channel][i]->linkwitzRileyActive()) {
                 crossoverFilters_[channel][i]->applyFilter(channelData, numSamples);
             }
@@ -286,8 +286,8 @@ void Assignment1Processor::updateFilter(float sampleRate)
 {
     for(int i = 0; i < numChannels; i++) {
         for(int j = 0; j < numXOverPerChannel; j++) {
-            crossoverFilters_[i][j*2]->makeCrossover(*crossoverFreq[j], sampleRate, true, false);
-            crossoverFilters_[i][(j*2)+1]->makeCrossover(*crossoverFreq[j], sampleRate, true, false);
+            crossoverFilters_[i][j*2]->makeCrossover(*crossoverFreq[j], sampleRate, false, false);
+            crossoverFilters_[i][(j*2)+1]->makeCrossover(*crossoverFreq[j], sampleRate, false, true);
         }
     }
 }

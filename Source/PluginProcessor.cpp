@@ -49,7 +49,7 @@ Assignment1Processor::Assignment1Processor()
     for(int i = 0; i < numXOverPerChannel; i++) {
         std::string s1 = "crossover" + std::to_string(i+1) + "Freq";
         std::string s2 = "Crossover " + std::to_string(i+1) + " Frequency";
-        addParameter (crossoverFreq[i] = new AudioParameterFloat (s1, s2, NormalisableRange<float>(20.0f, 20000.0f, 0.0f, 1.0f), 
+        addParameter (crossoverFreq[i] = new AudioParameterFloat (s1, s2, NormalisableRange<float>(20.0f, 20000.0f, 0.0f, 1.0f),
                     round((20000.0f / (1+numXOverPerChannel))*(i+1))));
     }
 
@@ -64,7 +64,7 @@ Assignment1Processor::Assignment1Processor()
 
         s1 = std::string("comp" + std::to_string(i+1) + "ratio");
         s2 = std::string("Compressor " + std::to_string(i+1) + " Ratio");
-        addParameter (compressorRatio[i] = new AudioParameterFloat (s1, s2, NormalisableRange<float>(1.0f, 100.0f, 0.1f, 1.0f), 0.0f));
+        addParameter (compressorRatio[i] = new AudioParameterFloat (s1, s2, NormalisableRange<float>(1.0f, 100.0f, 0.1f, 1.0f), 5.0f));
 
         s1 = std::string("comp" + std::to_string(i+1) + "gain");
         s2 = std::string("Compressor " + std::to_string(i+1) + " Gain");
@@ -243,14 +243,12 @@ void Assignment1Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& 
         // channelData is an array of length numSamples which contains the audio for one channel
         float* channelData = buffer.getWritePointer(channel);
 
-        /*
         for(int i = 0; i < numXOverPerChannel; i++) {
-            crossoverFilters_[channel][i]->applyFilter(channelData, numSamples);
+            crossoverFilters_[channel][i*2]->applyFilter(channelData, numSamples);
             if(crossoverFilters_[channel][i]->linkwitzRileyActive()) {
                 crossoverFilters_[channel][i]->applyFilter(channelData, numSamples);
             }
         }
-        */
         for(int j = 0; j < numCompPerChannel; j++) {
             compressors_[channel][j]->processSamples(buffer, numSamples, channel);
         }
@@ -288,8 +286,8 @@ void Assignment1Processor::updateFilter(float sampleRate)
 {
     for(int i = 0; i < numChannels; i++) {
         for(int j = 0; j < numXOverPerChannel; j++) {
-            crossoverFilters_[i][j]->makeCrossover(*crossoverFreq[j], sampleRate, true, false);
-            crossoverFilters_[i][j+1]->makeCrossover(*crossoverFreq[j], sampleRate, false, false);
+            crossoverFilters_[i][j*2]->makeCrossover(*crossoverFreq[j], sampleRate, true, false);
+            crossoverFilters_[i][(j*2)+1]->makeCrossover(*crossoverFreq[j], sampleRate, true, false);
         }
     }
 }
@@ -298,11 +296,11 @@ void Assignment1Processor::updateCompressor(float sampleRate)
     for(int i = 0; i < numChannels; i++) {
         for(int j = 0; j < numCompPerChannel; j++) {
             compressors_[i][j]->makeCompressor(
-                    sampleRate, 
-                    *compressorActive[j], 
-                    *compressorRatio[j], 
-                    *compressorThresh[j], 
-                    *compressorAttack[j], 
+                    sampleRate,
+                    *compressorActive[j],
+                    *compressorRatio[j],
+                    *compressorThresh[j],
+                    *compressorAttack[j],
                     *compressorRelease[j],
                     *compressorGain[j]
                 );

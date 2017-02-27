@@ -64,7 +64,7 @@ class Compressor
                     }
                     inputBuffer.clear();
                     inputBuffer.addFrom(0, 0, samples, channel, 0, bufferSize);
-                    std::cout << channel << std::endl;
+                    //std::cout << channel << std::endl;
                 }
             }
         }
@@ -95,6 +95,8 @@ class Compressor
                 const float gain
             )
         {
+            if(sr < 1)
+                return;
             sampleRate = sr;
             compressorONOFF = cOO;
             threshold = thresh;

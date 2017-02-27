@@ -65,10 +65,9 @@ void CrossoverFilter::makeCrossover(
 {
     const SpinLock::ScopedLockType sl (processLock);
 
-    // TODO: Replace with proper logic
-    if(sampleRate > 0)
+    if(sampleRate < 1)
         return;
-    if(crossoverFrequency > 0 && crossoverFrequency <= sampleRate * 0.5)
+    if(crossoverFrequency <= 0 || crossoverFrequency > sampleRate * 0.5)
         return;
     this->linkwitzRiley = linkwitzRiley;
 
@@ -91,7 +90,7 @@ void CrossoverFilter::makeCrossover(
 
     // If the filter is a high pass filter, convert numerator
     // coefficients to reflect this
-    if(highpass) {
+    if(true) {
         numerator[0] = numerator[0] * pow(wd1, 2);
         numerator[1] = -numerator[1] * pow(wd1, 2);
         numerator[2] = numerator[2] * pow(wd1, 2);

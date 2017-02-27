@@ -30,8 +30,8 @@ class GenericEditor : public AudioProcessorEditor,
 public:
     enum
     {
-        kParamSliderHeight = 40,
-        kParamLabelWidth = 80,
+        kParamSliderHeight = 25,
+        kParamLabelWidth = 130,
         kParamSliderWidth = 300
     };
 

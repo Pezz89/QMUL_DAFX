@@ -40,13 +40,17 @@ Assignment1Processor::Assignment1Processor()
 
     crossoverFreq.resize(numXOverPerChannel);
     compressorThresh.resize(numCompPerChannel);
+    compressorGain.resize(numCompPerChannel);
     compressorRatio.resize(numCompPerChannel);
     compressorActive.resize(numCompPerChannel);
+    compressorAttack.resize(numCompPerChannel);
+    compressorRelease.resize(numCompPerChannel);
 
     for(int i = 0; i < numXOverPerChannel; i++) {
         std::string s1 = "crossover" + std::to_string(i+1) + "Freq";
         std::string s2 = "Crossover " + std::to_string(i+1) + " Frequency";
-        addParameter (crossoverFreq[i] = new AudioParameterFloat (s1, s2, NormalisableRange<float>(20.0f, 20000.0f, 0.0f, 1.0f), 1000.0f));
+        addParameter (crossoverFreq[i] = new AudioParameterFloat (s1, s2, NormalisableRange<float>(20.0f, 20000.0f, 0.0f, 1.0f), 
+                    round((20000.0f / (1+numXOverPerChannel))*(i+1))));
     }
 
     for(int i = 0; i < numCompPerChannel; i++) {
@@ -54,13 +58,25 @@ Assignment1Processor::Assignment1Processor()
         std::string s2 = "Compressor " + std::to_string(i+1) + " Active";
         addParameter (compressorActive[i] = new AudioParameterBool (s1, s2, false));
 
-        s1 = "comp" + std::to_string(i+1) + "thresh";
-        s2 = "Compressor " + std::to_string(i+1) + " Threshold";
-        addParameter (compressorThresh[i] = new AudioParameterFloat (s1, s2, NormalisableRange<float>(-120.0f, 0.0f, 0.0f, 1.0f), 0.0f));
+        s1 = std::string("comp" + std::to_string(i+1) + "thresh");
+        s2 = std::string("Compressor " + std::to_string(i+1) + " Threshold");
+        addParameter (compressorThresh[i] = new AudioParameterFloat (s1, s2, NormalisableRange<float>(-60.0f, 0.0f, 1.0f, 1.0f), 0.0f));
 
-        s1 = "comp" + std::to_string(i+1) + "ratio";
-        s2 = "Compressor " + std::to_string(i+1) + " Ratio";
-        addParameter (compressorRatio[i] = new AudioParameterFloat (s1, s2, NormalisableRange<float>(0.0f, 10.0f, 0.0f, 1.0f), 0.0f));
+        s1 = std::string("comp" + std::to_string(i+1) + "ratio");
+        s2 = std::string("Compressor " + std::to_string(i+1) + " Ratio");
+        addParameter (compressorRatio[i] = new AudioParameterFloat (s1, s2, NormalisableRange<float>(1.0f, 100.0f, 0.1f, 1.0f), 0.0f));
+
+        s1 = std::string("comp" + std::to_string(i+1) + "gain");
+        s2 = std::string("Compressor " + std::to_string(i+1) + " Gain");
+        addParameter (compressorGain[i] = new AudioParameterFloat (s1, s2, NormalisableRange<float>(0, 40, 1, 1.0f), 0.0f));
+
+        s1 = std::string("comp" + std::to_string(i+1) + "attack");
+        s2 = std::string("Compressor " + std::to_string(i+1) + " Attack");
+        addParameter (compressorAttack[i] = new AudioParameterFloat (s1, s2, NormalisableRange<float>(0.1, 80, 0.1, 1.0f), 0.0f));
+
+        s1 = std::string("comp" + std::to_string(i+1) + "release");
+        s2 = std::string("Compressor " + std::to_string(i+1) + " release");
+        addParameter (compressorRelease[i] = new AudioParameterFloat (s1, s2, NormalisableRange<float>(0.1, 1000, 0.1, 1.0f), 0.0f));
     }
 }
 
@@ -281,7 +297,15 @@ void Assignment1Processor::updateCompressor(float sampleRate)
 {
     for(int i = 0; i < numChannels; i++) {
         for(int j = 0; j < numCompPerChannel; j++) {
-            compressors_[i][j]->makeCompressor(sampleRate, *compressorActive[j], *compressorRatio[j], *compressorThresh[j]);
+            compressors_[i][j]->makeCompressor(
+                    sampleRate, 
+                    *compressorActive[j], 
+                    *compressorRatio[j], 
+                    *compressorThresh[j], 
+                    *compressorAttack[j], 
+                    *compressorRelease[j],
+                    *compressorGain[j]
+                );
         }
     }
 }

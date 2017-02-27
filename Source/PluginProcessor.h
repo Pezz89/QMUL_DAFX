@@ -124,6 +124,10 @@ private:
     std::vector<AudioParameterFloat*> compressorThresh;
     std::vector<AudioParameterFloat*> compressorRatio;
     std::vector<AudioParameterBool*> compressorActive;
+    std::vector<AudioParameterFloat*> compressorGain;
+    std::vector<AudioParameterFloat*> compressorAttack;
+    std::vector<AudioParameterFloat*> compressorRelease;
+
 
     int numCrossoverFilters_;
     int numCompressors_;

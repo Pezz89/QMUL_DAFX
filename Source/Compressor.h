@@ -26,8 +26,6 @@ class Compressor
         bool autoTime;
         int bufferSize;
 
-
-
         void compress(AudioSampleBuffer &buffer, int m)
         {
             alphaAttack = exp(-1/(0.001 * sampleRate * tauAttack));
@@ -91,13 +89,19 @@ class Compressor
                 const int sr,
                 const bool cOO,
                 const float rat,
-                const float thresh
+                const float thresh,
+                const float attack,
+                const float release,
+                const float gain
             )
         {
             sampleRate = sr;
             compressorONOFF = cOO;
             threshold = thresh;
             ratio = rat;
+            tauAttack = attack;
+            tauRelease = release;
+            makeUpGain = gain;
         }
         //////////////////////////////////////////////
         float getThreshold()

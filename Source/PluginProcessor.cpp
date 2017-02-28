@@ -180,7 +180,7 @@ void Assignment1Processor::prepareToPlay (double sampleRate, int samplesPerBlock
     crossoverFilters_.resize(numCrossoverFilters_);
     for( auto &it : crossoverFilters_ )
     {
-        it.resize(numXOverPerChannel * 2);
+        it.resize((numXOverPerChannel * 2)-2);
     }
     if(crossoverFilters_.size() != 0) {
         std::vector<std::vector<std::unique_ptr<CrossoverFilter>> >::iterator row;
@@ -233,7 +233,12 @@ void Assignment1Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& 
     const int numInputChannels = getNumInputChannels();     // How many input channels for our effect?
     const int numOutputChannels = getNumOutputChannels();   // How many output channels for our effect?
     const int numSamples = buffer.getNumSamples();          // How many samples in the buffer for this block?
+    const int numBands = numXOverPerChannel+1;
     int channel;
+    AudioSampleBuffer input;
+    input.makeCopyOf(buffer);
+    AudioSampleBuffer output = AudioSampleBuffer(1, numSamples);
+    buffer.clear();
 
     updateCompressor(getSampleRate());
     updateFilter(getSampleRate());
@@ -241,17 +246,46 @@ void Assignment1Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& 
     for (channel = 0; channel < numInputChannels; ++channel)
     {
         // channelData is an array of length numSamples which contains the audio for one channel
-        float* channelData = buffer.getWritePointer(channel);
+        float* in = input.getWritePointer(channel);
+        float* out = output.getWritePointer(0);
 
-        for(int i = 0; i < numXOverPerChannel*2; i++) {
-            crossoverFilters_[channel][i]->applyFilter(channelData, numSamples);
+        int i = 0;
+        int j = 0;
+        crossoverFilters_[channel][i]->applyFilter(in, out, numSamples);
+        if(crossoverFilters_[channel][i]->linkwitzRileyActive()) {
+            crossoverFilters_[channel][i]->applyFilter(out, out, numSamples);
+        }
+        compressors_[channel][j]->processSamples(output, output, numSamples, 0);
+        for (int sample = 0; sample < numSamples; ++sample)
+            buffer.getWritePointer(channel)[sample] += output.getReadPointer(0)[sample];
+
+        output.clear();
+        j++;
+        for(i = 1; i < numBands-1; i+=2) {
+            crossoverFilters_[channel][i]->applyFilter(in, out, numSamples);
             if(crossoverFilters_[channel][i]->linkwitzRileyActive()) {
-                crossoverFilters_[channel][i]->applyFilter(channelData, numSamples);
+                crossoverFilters_[channel][i]->applyFilter(out, out, numSamples);
             }
+
+            crossoverFilters_[channel][i+1]->applyFilter(out, out, numSamples);
+            if(crossoverFilters_[channel][i+1]->linkwitzRileyActive()) {
+                crossoverFilters_[channel][i+1]->applyFilter(out, out, numSamples);
+            }
+            compressors_[channel][j]->processSamples(output, output, numSamples, 0);
+            for (int sample = 0; sample < numSamples; ++sample)
+                buffer.getWritePointer(channel)[sample] += output.getReadPointer(0)[sample];
+            output.clear();
+            j++;
         }
-        for(int j = 0; j < numCompPerChannel; j++) {
-            compressors_[channel][j]->processSamples(buffer, numSamples, channel);
+        i = numBands;
+        crossoverFilters_[channel][i+1]->applyFilter(in, out, numSamples);
+        if(crossoverFilters_[channel][i+1]->linkwitzRileyActive()) {
+            crossoverFilters_[channel][i+1]->applyFilter(out, out, numSamples);
         }
+        compressors_[channel][j]->processSamples(output, output, numSamples, 0);
+        for (int sample = 0; sample < numSamples; ++sample)
+            buffer.getWritePointer(channel)[sample] += output.getReadPointer(0)[sample];
+        output.clear();
     }
     // Go through the remaining channels. In case we have more outputs
     // than inputs, or there aren't enough filters, we'll clear any
@@ -284,11 +318,19 @@ void Assignment1Processor::setStateInformation (const void* data, int sizeInByte
 // Update the coefficients of the parametric equaliser filter
 void Assignment1Processor::updateFilter(float sampleRate)
 {
-    for(int i = 0; i < numChannels; i++) {
-        for(int j = 0; j < numXOverPerChannel; j++) {
-            crossoverFilters_[i][j*2]->makeCrossover(*crossoverFreq[j], sampleRate, false, false);
-            crossoverFilters_[i][(j*2)+1]->makeCrossover(*crossoverFreq[j], sampleRate, false, true);
+    const int numBands = numXOverPerChannel+1;
+    int i = 0;
+    int j = 0;
+    for(i = 0; i < numChannels; i++) {
+        //for(int j = 0; j < numXOverPerChannel; j++) {
+        crossoverFilters_[i][j]->makeCrossover(*crossoverFreq[j], sampleRate, false, true);
+        j++;
+        for(j = 1; j < numBands-1; j+=2) {
+            crossoverFilters_[i][j]->makeCrossover(*crossoverFreq[j], sampleRate, false, false);
+            crossoverFilters_[i][j+1]->makeCrossover(*crossoverFreq[j], sampleRate, false, true);
         }
+        i = numBands-1;
+        crossoverFilters_[i][j]->makeCrossover(*crossoverFreq[j], sampleRate, false, false);
     }
 }
 void Assignment1Processor::updateCompressor(float sampleRate)

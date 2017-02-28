@@ -48,7 +48,7 @@ class Compressor
             }
         }
 
-        void processSamples(AudioSampleBuffer& samples, int numSamples, int channel) {
+        void processSamples(AudioSampleBuffer& samples, AudioSampleBuffer& output, const int numSamples, const int channel) {
             if (compressorONOFF)
             {
                 if ( (threshold< 0) )
@@ -60,7 +60,7 @@ class Compressor
                     // apply control voltage to the audio signal
                     for (int i = 0 ; i < numSamples ; ++i)
                     {
-                        samples.getWritePointer(channel)[i] *= c[i];
+                        output.getWritePointer(0)[i] *= c[i];
                     }
                     inputBuffer.clear();
                     inputBuffer.addFrom(0, 0, samples, channel, 0, bufferSize);

@@ -111,7 +111,7 @@ void CrossoverFilter::makeCrossover(
     */
 }
 
-void CrossoverFilter::applyFilter(float* const samples, const int numSamples) noexcept {
+void CrossoverFilter::applyFilter(float* const samples, float* const output, const int numSamples) noexcept {
     const SpinLock::ScopedLockType sl (processLock);
     if(active){
         for(int i = 0; i < numSamples; ++i) {
@@ -160,7 +160,7 @@ void CrossoverFilter::applyFilter(float* const samples, const int numSamples) no
             // buffer
             outputDelayBuf[(outputDelayBufWritePtr+outputDelaySize)%outputDelaySize] = y;
 
-            samples[i] = y;
+            output[i] = y;
         }
     }
 }

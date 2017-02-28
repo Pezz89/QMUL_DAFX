@@ -53,7 +53,7 @@ public:
         const bool highpass
     ) noexcept;
 
-    void applyFilter(float* const samples, const int numSamples) noexcept;
+    void applyFilter(float* const samples, float* const output, const int numSamples) noexcept;
 
 
     /** Makes this filter duplicate the set-up of another one.

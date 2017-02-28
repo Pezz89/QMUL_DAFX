@@ -37,15 +37,10 @@
  #define JUCE_SNAP_TO_ZERO(n)
 #endif
 
-/* The actual audio processing is handled by the Juce IIRFilter parent
- * class. This subclass is used to define the coefficients for our
- * implementation of a parametric equaliser.
- */
-
 CrossoverFilter::CrossoverFilter(bool highpass, bool linkwitzRiley) {
     active = false;
-    numerator.resize(3, 0);
-    denominator.resize(3, 0);
+    numerator.resize(5, 0);
+    denominator.resize(5, 0);
     this->linkwitzRiley = linkwitzRiley;
     // Allocate memory for delay line based on the number of
     // coefficients generated. Initialize vectors with values of 0.
@@ -157,7 +152,7 @@ void CrossoverFilter::applyFilter(float* const samples, float* const output, con
 
             // Taken from Juce's IIR filter code. Deals with some bug that I
             // haven't looked in to...
-            JUCE_SNAP_TO_ZERO(y);
+            //JUCE_SNAP_TO_ZERO(y);
 
             // Store the calculated output sample in the output sample delay
             // buffer
@@ -168,6 +163,8 @@ void CrossoverFilter::applyFilter(float* const samples, float* const output, con
     }
 }
 
+// Could have been used for linkwitz riley coefficient calculation. Needs
+// memory efficiency improvments to work in this context live...
 std::vector<double> CrossoverFilter::convolveCoefficients(std::vector<double> const &f, std::vector<double> const &g) {
     // Calculate the size of input vectors
     const int nf = f.size();

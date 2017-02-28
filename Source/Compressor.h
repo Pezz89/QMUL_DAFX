@@ -60,7 +60,7 @@ class Compressor
                     // apply control voltage to the audio signal
                     for (int i = 0 ; i < numSamples ; ++i)
                     {
-                        output.getWritePointer(0)[i] *= c[i];
+                        output.getWritePointer(0)[i] *= c[i] * 0;
                     }
                     inputBuffer.clear();
                     inputBuffer.addFrom(0, 0, samples, channel, 0, bufferSize);

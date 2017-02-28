@@ -63,7 +63,7 @@ void CrossoverFilter::makeCrossover(
         const bool highpass
     ) noexcept
 {
-    const SpinLock::ScopedLockType sl (processLock);
+    //const SpinLock::ScopedLockType sl (processLock);
 
     if(sampleRate < 1)
         return;
@@ -112,7 +112,7 @@ void CrossoverFilter::makeCrossover(
 }
 
 void CrossoverFilter::applyFilter(float* const samples, float* const output, const int numSamples) noexcept {
-    const SpinLock::ScopedLockType sl (processLock);
+    //const SpinLock::ScopedLockType sl (processLock);
     if(active){
         for(int i = 0; i < numSamples; ++i) {
             // Perform filtering using doubles for greater precision

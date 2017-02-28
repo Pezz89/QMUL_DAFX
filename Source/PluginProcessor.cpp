@@ -64,7 +64,7 @@ Assignment1Processor::Assignment1Processor()
 
         s1 = std::string("comp" + std::to_string(i+1) + "ratio");
         s2 = std::string("Compressor " + std::to_string(i+1) + " Ratio");
-        addParameter (compressorRatio[i] = new AudioParameterFloat (s1, s2, NormalisableRange<float>(1.0f, 100.0f, 0.1f, 1.0f), 5.0f));
+        addParameter (compressorRatio[i] = new AudioParameterFloat (s1, s2, NormalisableRange<float>(1.0f, 100.0f, 0.1f, 1.0f), 1.0f));
 
         s1 = std::string("comp" + std::to_string(i+1) + "gain");
         s2 = std::string("Compressor " + std::to_string(i+1) + " Gain");
@@ -280,7 +280,6 @@ void Assignment1Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& 
             j++;
             i+=2;
         }
-        //jassert(i == numBands);
         i = (numXOverPerChannel*2)-1;
         crossoverFilters_[channel][i]->applyFilter(in, out, numSamples);
         if(crossoverFilters_[channel][i]->linkwitzRileyActive()) {
@@ -327,17 +326,17 @@ void Assignment1Processor::updateFilter(float sampleRate)
     for(int i = 0; i < numChannels; i++) {
         int j = 0;
         int k = 0;
-        crossoverFilters_[i][j]->makeCrossover(*crossoverFreq[k], sampleRate, false, false);
+        crossoverFilters_[i][j]->makeCrossover(*crossoverFreq[k], sampleRate, true, false);
         j = 1;
         k = 1;
         while(j < (numXOverPerChannel*2)-1) {
-            crossoverFilters_[i][j]->makeCrossover(*crossoverFreq[k-1], sampleRate, false, true);
-            crossoverFilters_[i][j+1]->makeCrossover(*crossoverFreq[k], sampleRate, false, false);
+            crossoverFilters_[i][j]->makeCrossover(*crossoverFreq[k-1], sampleRate, true, true);
+            crossoverFilters_[i][j+1]->makeCrossover(*crossoverFreq[k], sampleRate, true, false);
             j+=2;
             k++;
         }
-        j = numXOverPerChannel*2-1;
-        crossoverFilters_[i][j]->makeCrossover(*crossoverFreq[k-1], sampleRate, false, true);
+        j = (numXOverPerChannel*2)-1;
+        crossoverFilters_[i][j]->makeCrossover(*crossoverFreq[k-1], sampleRate, true, true);
     }
 }
 void Assignment1Processor::updateCompressor(float sampleRate)

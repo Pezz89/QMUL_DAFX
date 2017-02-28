@@ -76,6 +76,7 @@ private:
     unsigned int inputDelayBufWritePtr, outputDelayBufWritePtr = 0;
     SpinLock processLock;
     bool linkwitzRiley;
+    double prevFreq;
 
     JUCE_LEAK_DETECTOR (CrossoverFilter);
 

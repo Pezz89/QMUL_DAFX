@@ -54,6 +54,7 @@ CrossoverFilter::CrossoverFilter(bool highpass, bool linkwitzRiley) {
     // Store the delay size of delay buffers
     inputDelaySize = inputDelayBuf.size();
     outputDelaySize = outputDelayBuf.size();
+    prevFreq = 0;
 }
 
 void CrossoverFilter::makeCrossover(
@@ -67,9 +68,10 @@ void CrossoverFilter::makeCrossover(
 
     if(sampleRate < 1)
         return;
-    if(crossoverFrequency <= 0 || crossoverFrequency > sampleRate * 0.5)
+    if(crossoverFrequency == prevFreq || crossoverFrequency <= 0 || crossoverFrequency > sampleRate * 0.5)
         return;
     this->linkwitzRiley = linkwitzRiley;
+    prevFreq = crossoverFrequency;
 
     // This code was adapted from code originally submitted by the author for
     // the Real-time DSP module assignment 1.
@@ -103,6 +105,7 @@ void CrossoverFilter::makeCrossover(
     // order butterworth filter with themselves. This creates the 5
     // coefficients of 2 cascaded 2nd order butterworth filters needed
     // for this filter structure.
+
     /*
     if(linkwitzRiley) {
         numerator = convolveCoefficients(numerator, numerator);

@@ -53,18 +53,13 @@ class Compressor
             {
                 if ( (threshold< 0) )
                 {
-                    inputBuffer.clear();
-                    inputBuffer.addFrom(0, 0, samples, channel, 0, bufferSize);
                     // compression : calculates the control voltage
-                    compress(inputBuffer,0);
+                    compress(samples,0);
                     // apply control voltage to the audio signal
                     for (int i = 0 ; i < numSamples ; ++i)
                     {
-                        output.getWritePointer(0)[i] *= c[i] * 0;
+                        output.getWritePointer(0)[i] *= c[i];
                     }
-                    inputBuffer.clear();
-                    inputBuffer.addFrom(0, 0, samples, channel, 0, bufferSize);
-                    //std::cout << channel << std::endl;
                 }
             }
         }
@@ -97,6 +92,7 @@ class Compressor
         {
             if(sr < 1)
                 return;
+            resetAll();
             sampleRate = sr;
             compressorONOFF = cOO;
             threshold = thresh;

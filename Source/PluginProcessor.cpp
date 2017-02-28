@@ -35,9 +35,11 @@
 //==============================================================================
 Assignment1Processor::Assignment1Processor()
 {
+    // Define the number of crossover filters and compressors on each channel
     numXOverPerChannel = 3;
     numCompPerChannel = numXOverPerChannel+1;
 
+    // Allocate memory to store parameters recieved from the UI
     crossoverFreq.resize(numXOverPerChannel);
     compressorThresh.resize(numCompPerChannel);
     compressorGain.resize(numCompPerChannel);
@@ -46,6 +48,7 @@ Assignment1Processor::Assignment1Processor()
     compressorAttack.resize(numCompPerChannel);
     compressorRelease.resize(numCompPerChannel);
 
+    // Add crossover parameters to the UI using JUCE's generic GUI editior
     for(int i = 0; i < numXOverPerChannel; i++) {
         std::string s1 = "crossover" + std::to_string(i+1) + "Freq";
         std::string s2 = "Crossover " + std::to_string(i+1) + " Frequency";
@@ -53,6 +56,7 @@ Assignment1Processor::Assignment1Processor()
                     round((20000.0f / (1+numXOverPerChannel))*(i+1))));
     }
 
+    // Add compressors to the UI
     for(int i = 0; i < numCompPerChannel; i++) {
         std::string s1 = "comp" + std::to_string(i+1) + "active";
         std::string s2 = "Compressor " + std::to_string(i+1) + " Active";
@@ -80,10 +84,14 @@ Assignment1Processor::Assignment1Processor()
     }
 }
 
+// Empty destructor as all dynamic memory is handled using std containers and
+// unique_ptrs
 Assignment1Processor::~Assignment1Processor()
 {
 }
 
+//==============================================================================
+// Getter and setter function for the processor class 
 //==============================================================================
 const String Assignment1Processor::getName() const
 {
@@ -164,6 +172,7 @@ const String Assignment1Processor::getProgramName (int index)
 void Assignment1Processor::changeProgramName (int index, const String& newName)
 {
 }
+//==============================================================================
 
 //==============================================================================
 void Assignment1Processor::prepareToPlay (double sampleRate, int samplesPerBlock)
@@ -174,14 +183,19 @@ void Assignment1Processor::prepareToPlay (double sampleRate, int samplesPerBlock
     //////////////////////////////////////////////////////////////////////////
     // Crossover filter initialisation
     //////////////////////////////////////////////////////////////////////////
-    // Create as many filters as we have input channels
+    // Get info about host for compressor/filter initialization
     numChannels = getNumInputChannels();
     numCrossoverFilters_ = numChannels;
+    int bufferSize = getBlockSize();
+
+    // Allocate memory for filter objects
     crossoverFilters_.resize(numCrossoverFilters_);
     for( auto &it : crossoverFilters_ )
     {
         it.resize(numXOverPerChannel * 2);
     }
+
+    // Fill vector with filter objects to be used for constructing crossovers
     if(crossoverFilters_.size() != 0) {
         std::vector<std::vector<std::unique_ptr<CrossoverFilter>> >::iterator row;
         std::vector<std::unique_ptr<CrossoverFilter>>::iterator col;
@@ -198,14 +212,12 @@ void Assignment1Processor::prepareToPlay (double sampleRate, int samplesPerBlock
     //////////////////////////////////////////////////////////////////////////
     // Compressor initialisation
     //////////////////////////////////////////////////////////////////////////
-    numCompressors_ = numChannels * numCompPerChannel;
-
-    compressors_.resize(numChannels);
+    // Allocate memory for compressor objects
     for( auto &it : compressors_ )
     {
         it.resize(numCompPerChannel);
     }
-    int bufferSize = getBlockSize();
+
     // Create required number of compressors
     if(compressors_.size() != 0) {
         std::vector<std::vector<std::unique_ptr<Compressor>> >::iterator row;
@@ -229,23 +241,35 @@ void Assignment1Processor::releaseResources()
 
 void Assignment1Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Audio processing block
+    //////////////////////////////////////////////////////////////////////////
     // Helpful information about this block of samples:
     const int numInputChannels = getNumInputChannels();     // How many input channels for our effect?
     const int numOutputChannels = getNumOutputChannels();   // How many output channels for our effect?
     const int numSamples = buffer.getNumSamples();          // How many samples in the buffer for this block?
+    // Calculate the total number of frequency bands
     const int numBands = numXOverPerChannel+1;
+    // Store the number of the channel that is currently being processed
     int channel;
+    // Copy input audio to a new buffer (input buffer will be used for output)
     AudioSampleBuffer input;
     input.makeCopyOf(buffer);
+    // Stores output in an output buffer, then copies to the actual buffer.
+    // This was possibly implemented due to an early bug and could be
+    // refactored for improved memory efficiency.
     AudioSampleBuffer output = AudioSampleBuffer(1, numSamples);
     buffer.clear();
 
+    // Update parameters of all effects on each block. This seems excessive to
+    // perform in the processing block, but a function that is only called
+    // reliably on parameter changes wasn't found.
     updateCompressor(getSampleRate());
     updateFilter(getSampleRate());
     // Go through each channel of audio that's passed in
     for (channel = 0; channel < numInputChannels; ++channel)
     {
-        // channelData is an array of length numSamples which contains the audio for one channel
+        // in is an array of length numSamples which contains the audio for one channel
         float* in = input.getWritePointer(channel);
         float* out = output.getWritePointer(0);
 

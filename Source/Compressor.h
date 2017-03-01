@@ -4,6 +4,7 @@
 class Compressor
 {
     public:
+        // Constructor for initialising compressor object
         Compressor(int bufferSize) noexcept : inputBuffer(1,1) {
             this->bufferSize = bufferSize;
             // Allocate a lot of dynamic memory here
@@ -28,6 +29,8 @@ class Compressor
 
         void compress(AudioSampleBuffer &buffer, int m)
         {
+            // Apply compression to the input buffer based on parameters set
+            // in the UI
             alphaAttack = exp(-1/(0.001 * sampleRate * tauAttack));
             alphaRelease= exp(-1/(0.001 * sampleRate * tauRelease));
             for (int i = 0 ; i < bufferSize ; ++i)
@@ -40,7 +43,7 @@ class Compressor
                 else y_g[i] = x_g[i];
                 x_l[i] = x_g[i] - y_g[i];
                 //Ballistics- smoothing of the gain
-                if (x_l[0]>yL_prev)  y_l[i]=alphaAttack * yL_prev+(1 - alphaAttack ) * x_l[i] ;
+                if (x_l[i]>yL_prev)  y_l[i]=alphaAttack * yL_prev+(1 - alphaAttack ) * x_l[i] ;
                 else                 y_l[i]=alphaRelease* yL_prev+(1 - alphaRelease) * x_l[i] ;
                 //find control
                 c[i] = pow(10,(makeUpGain - y_l[i])/20);
@@ -90,6 +93,7 @@ class Compressor
                 const float gain
             )
         {
+            // Set parameter values based on UI
             if(sr < 1)
                 return;
             resetAll();
@@ -101,7 +105,9 @@ class Compressor
             tauRelease = release;
             makeUpGain = gain;
         }
-        //////////////////////////////////////////////
+        //==============================================================================
+        // Getter and setter function for the compressor class
+        //==============================================================================
         float getThreshold()
         {
             return threshold;
@@ -149,6 +155,8 @@ class Compressor
         }
 
     private:
+        // Declare member variables for storing parameters and any internal
+        // audio buffers
         AudioSampleBuffer inputBuffer;
         HeapBlock <float> x_g, x_l,y_g, y_l,c;// input, output, control
             // parameters

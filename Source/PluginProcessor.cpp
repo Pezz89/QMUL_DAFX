@@ -273,19 +273,28 @@ void Assignment1Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& 
         float* in = input.getWritePointer(channel);
         float* out = output.getWritePointer(0);
 
+        // Apply each filter to create sub-bands
         int i = 0;
         int j = 0;
         crossoverFilters_[channel][i]->applyFilter(in, out, numSamples);
+        // If using the Linkwitz Riley filter structure, apply the 2nd order
+        // butterworth twice to create a 4th order Linkwitz Riley filter
         if(crossoverFilters_[channel][i]->linkwitzRileyActive()) {
             crossoverFilters_[channel][i]->applyFilter(out, out, numSamples);
         }
+        // Apply compressor to filtered subband
         compressors_[channel][j]->processSamples(output, output, numSamples, 0);
+        // Add subband to output block
         for (int sample = 0; sample < numSamples; ++sample)
             buffer.getWritePointer(channel)[sample] += output.getReadPointer(0)[sample];
 
+        // Clear the output block ready for the next subband
         output.clear();
         j = 1;
         i = 1;
+        // Create band pass subbands by applying both low and high pass filters
+        // to the input. Then apply compressor as with the previous subband and
+        // add to the output
         while(i < (numXOverPerChannel*2)-1) {
             crossoverFilters_[channel][i]->applyFilter(in, out, numSamples);
             if(crossoverFilters_[channel][i]->linkwitzRileyActive()) {
@@ -304,6 +313,8 @@ void Assignment1Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& 
             j++;
             i+=2;
         }
+        // Finally, apply the high pass to reate the final subband and compress
+        // as before
         i = (numXOverPerChannel*2)-1;
         crossoverFilters_[channel][i]->applyFilter(in, out, numSamples);
         if(crossoverFilters_[channel][i]->linkwitzRileyActive()) {
@@ -314,7 +325,6 @@ void Assignment1Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& 
             buffer.getWritePointer(channel)[sample] += output.getReadPointer(0)[sample];
         output.clear();
         j = 0;
-        //i = 0;
     }
     // Go through the remaining channels. In case we have more outputs
     // than inputs, or there aren't enough filters, we'll clear any
@@ -335,6 +345,7 @@ AudioProcessorEditor* Assignment1Processor::createEditor() { return new GenericE
 
 
 //==============================================================================
+// Can be used to persist states between instances. Removed for simplicity.
 void Assignment1Processor::getStateInformation (MemoryBlock& destData)
 {
 }
@@ -347,6 +358,8 @@ void Assignment1Processor::setStateInformation (const void* data, int sizeInByte
 // Update the coefficients of the parametric equaliser filter
 void Assignment1Processor::updateFilter(float sampleRate)
 {
+    // Iterate over each filter object and apply relevant parameters from the
+    // UI
     for(int i = 0; i < numChannels; i++) {
         int j = 0;
         int k = 0;
@@ -365,6 +378,8 @@ void Assignment1Processor::updateFilter(float sampleRate)
 }
 void Assignment1Processor::updateCompressor(float sampleRate)
 {
+    // Iterate over each compressor object and apply relevant parameters from the
+    // UI
     for(int i = 0; i < numChannels; i++) {
         for(int j = 0; j < numCompPerChannel; j++) {
             compressors_[i][j]->makeCompressor(

@@ -213,6 +213,7 @@ void Assignment1Processor::prepareToPlay (double sampleRate, int samplesPerBlock
     // Compressor initialisation
     //////////////////////////////////////////////////////////////////////////
     // Allocate memory for compressor objects
+    compressors_.resize(numChannels);
     for( auto &it : compressors_ )
     {
         it.resize(numCompPerChannel);

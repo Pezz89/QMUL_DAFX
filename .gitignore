@@ -1,6 +1,7 @@
 .DS_Store
 bin/
 Builds
+tags
 JuceLibraryCode
 # Compiled Object files
 *.slo

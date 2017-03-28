@@ -15,7 +15,8 @@ Assignment2Processor::Assignment2Processor()
 //==============================================================================
 void Assignment2Processor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    numInputChannels_ = getNumInputChannels();
+    numInputChannels_ = getTotalNumInputChannels();
+    numOutputChannels_ = getTotalNumOutputChannels();
     // Create a new granulator object for each input channel
     for(int i=0; i<numInputChannels_; ++i){
         granulators_.push_back(std::make_unique<Granulator>());
@@ -31,6 +32,8 @@ void Assignment2Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& 
     //////////////////////////////////////////////////////////////////////////
     // Helpful information about this block of samples:
     const int numSamples = buffer.getNumSamples();          // How many samples in the buffer for this block?
+    numInputChannels_ = getTotalNumInputChannels();
+    numOutputChannels_ = getTotalNumOutputChannels();
     // Create new buffer to store input
     AudioSampleBuffer input;
     // Copy input audio to a new buffer (input buffer will be used for output)
@@ -48,12 +51,6 @@ void Assignment2Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& 
         float* out = buffer.getWritePointer(channel);
 
         granulators_[channel]->applyShuffle(in, out, numSamples);
-    }
-    // Clear any remaining channels to avoid output of garbage when output
-    // channel > input channels
-    while(channel < numOutputChannels_)
-    {
-        buffer.clear (channel++, 0, buffer.getNumSamples());
     }
 }
 

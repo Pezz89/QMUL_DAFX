@@ -12,16 +12,12 @@
               companyEmail="samuel.perry89@gmail.com" companyName="SPPlugins">
   <MAINGROUP id="HizB1s" name="Assignment2">
     <GROUP id="{C5CDEB98-FCBC-CD18-FD76-5A6DA145307F}" name="Source">
+      <FILE id="DkHOka" name="Granulator.cpp" compile="1" resource="0" file="Source/Granulator.cpp"/>
+      <FILE id="POdpO6" name="Granulator.h" compile="0" resource="0" file="Source/Granulator.h"/>
       <FILE id="Tynxdz" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="CMIcrQ" name="PluginProcessor.h" compile="0" resource="0"
             file="Source/PluginProcessor.h"/>
-      <FILE id="ffeK9G" name="Compressor.cpp" compile="1" resource="0" file="Source/Compressor.cpp"/>
-      <FILE id="UfFZHq" name="Compressor.h" compile="0" resource="0" file="Source/Compressor.h"/>
-      <FILE id="vBvOpR" name="CrossoverFilter.cpp" compile="1" resource="0"
-            file="Source/CrossoverFilter.cpp"/>
-      <FILE id="rqMLro" name="CrossoverFilter.h" compile="0" resource="0"
-            file="Source/CrossoverFilter.h"/>
       <FILE id="jw75TA" name="GenericEditor.h" compile="0" resource="0" file="Source/GenericEditor.h"/>
     </GROUP>
   </MAINGROUP>

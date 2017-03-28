@@ -4,7 +4,13 @@
 #include <string>
 
 //==============================================================================
-Assignment2Processor::Assignment2Processor(){}
+Assignment2Processor::Assignment2Processor()
+{
+    std::string s1 = "crossover" + std::to_string(1) + "Freq";
+    std::string s2 = "Crossover " + std::to_string(1) + " Frequency";
+    addParameter (new AudioParameterFloat (s1, s2, NormalisableRange<float>(20.0f, 20000.0f, 0.0f, 1.0f),
+                    round((20000.0f / (1+1))*(1+1))));
+}
 
 //==============================================================================
 void Assignment2Processor::prepareToPlay (double sampleRate, int samplesPerBlock)
@@ -38,10 +44,10 @@ void Assignment2Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& 
     for (channel = 0; channel < numInputChannels_; ++channel)
     {
         // Get Read pointer for input and write pointer for output
-        float* in = input.getReadPointer(channel);
+        const float* in = input.getReadPointer(channel);
         float* out = buffer.getWritePointer(channel);
 
-        granulator.applyShuffle(in, out, numSamples)
+        granulators_[channel]->applyShuffle(in, out, numSamples);
     }
     // Clear any remaining channels to avoid output of garbage when output
     // channel > input channels

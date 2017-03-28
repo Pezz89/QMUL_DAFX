@@ -56,10 +56,6 @@ public:
     void processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages);
 
     //==============================================================================
-    AudioProcessorEditor* createEditor();
-    bool hasEditor() const;
-
-    //==============================================================================
 
     const String getName() const {return JucePlugin_Name;}
     const String getInputChannelName (int channelIndex) const {return String (channelIndex + 1);}
@@ -96,7 +92,7 @@ private:
     unsigned int numOutputChannels_;   // How many output channels for our effect?
     void updateGranulator(float sampleRate) {};
 
-    std::vector<std::vector<std::unique_ptr<Granulator>>> granulators_;
+    std::vector<std::unique_ptr<Granulator>> granulators_;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Assignment2Processor);

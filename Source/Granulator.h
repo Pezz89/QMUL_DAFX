@@ -14,9 +14,11 @@ class Granulator
         void applyShuffle(const float* const in, float* const out, const int numSamples) noexcept;
     private:
         AudioSampleBuffer grainBuf_;
-        std::vector<const float*> grainBufReadPointers_;
-        std::vector<int> grainBufReadPointersPosition_;
-        float* grainBufWritePointer_;
+        std::vector<const float*> readPointers_;
+        std::vector<int> readPointerGrainPosition_;
+        std::vector<int> readPointersBufferPosition_;
+        float* writePointer_;
+        int writePointerPosition_;
 
         unsigned int grainSize_;
         unsigned int hopSize_;

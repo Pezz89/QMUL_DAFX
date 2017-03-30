@@ -20,6 +20,7 @@ void Assignment2Processor::prepareToPlay (double sampleRate, int samplesPerBlock
     // Create a new granulator object for each input channel
     for(int i=0; i<numInputChannels_; ++i){
         granulators_.push_back(std::make_unique<Granulator>(int(sampleRate*5)));
+        granulators_[i]->updateParameters(44100, 22050);
     }
 }
 

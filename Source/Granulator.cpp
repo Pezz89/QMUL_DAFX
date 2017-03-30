@@ -2,6 +2,7 @@
  
 #include "Granulator.h"
 #include <cmath>
+#include <cstdio>
 Granulator::Granulator(const int maxBufSize) 
 {
     // Create buffer to store a set amount of audio - this will be used as the
@@ -15,6 +16,8 @@ void Granulator::updateParameters(const unsigned int grainSize, const unsigned i
 {
     hopSize_ = hopSize;
     grainSize_ = grainSize;
+    grainSize_ = 44100;
+    hopSize_ = 22050;
     // For the number of overlapping grains at any time
     for(int i=0; i<ceil(float(grainSize_)/float(hopSize_)); i++) {
         // Create a read pointer
@@ -68,7 +71,7 @@ void Granulator::applyShuffle (const float* const in, float* const out, const in
         writePointer_++;
         writePointerPosition_++;
         if(writePointerPosition_ == numSamps) {
-            writePointer_ = 0;
+            writePointer_ = grainBuf_.getWritePointer(0);
             writePointerPosition_ = 0;
         }
     }

@@ -24,11 +24,12 @@ Granulator::Granulator(const int maxBufSize)
     }
 }
 
-void Granulator::updateParameters(const unsigned int grainSize, const unsigned int bufferReadSize)
+void Granulator::updateParameters(const unsigned int grainSize, const unsigned int bufferReadSize, const float dryWetMix)
 {
     grainSize_ = grainSize;
     hopSize_ = ceil(grainSize_/4);
     bufferReadSize_ = std::max(bufferReadSize, grainSize_);
+    dryWetMix_ = dryWetMix;
 
 }
 
@@ -78,6 +79,7 @@ void Granulator::applyShuffle (const float* const in, float* const out, const in
                 readPointerGrainPosition_[j] = -1;
             }
         }
+        out[i] = (in[i] * (1.0-dryWetMix_)) + (out[i] * dryWetMix_);
         // Increment the write pointer
         writePointer_++;
         writePointerPosition_++;

@@ -96,6 +96,7 @@ private:
 
     AudioParameterFloat* grainSizeParam_;
     AudioParameterFloat* bufReadSizeParam_;
+    AudioParameterFloat* dryWetMixParam_;
 
     unsigned int sampleRate_ = 0;
 

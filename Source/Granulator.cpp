@@ -3,6 +3,7 @@
 #include "Granulator.h"
 #include <cmath>
 #include <cstdio>
+#include <algorithm>
 Granulator::Granulator(const int maxBufSize) 
 {
     // Create buffer to store a set amount of audio - this will be used as the
@@ -23,15 +24,17 @@ Granulator::Granulator(const int maxBufSize)
     }
 }
 
-void Granulator::updateParameters(const unsigned int grainSize)
+void Granulator::updateParameters(const unsigned int grainSize, const unsigned int bufferReadSize)
 {
     grainSize_ = grainSize;
     hopSize_ = ceil(grainSize_/4);
+    bufferReadSize_ = std::max(bufferReadSize, grainSize_);
+
 }
 
 void Granulator::applyShuffle (const float* const in, float* const out, const int numSamples) noexcept {
     // For each sample in the current input block...
-    int numSamps = grainBuf_.getNumSamples();
+    int numBufSamps = grainBuf_.getNumSamples();
     for(int i = 0; i < numSamples; ++i) {
         // Write input sample to current point in buffer
         *writePointer_ = in[i];
@@ -40,9 +43,12 @@ void Granulator::applyShuffle (const float* const in, float* const out, const in
         for(int j=0; j<readPointers_.size(); j++) {
             // If the read pointer isn't currently active...
             if((j * hopSize_ == sampCounter) && (readPointerGrainPosition_[j] < 0)) {
-            //if(readPointerGrainPosition_[j] < 0) {
                 // Generate new index at random within the input sample buffer
-                int randNum = randomFrom<int>(0, numSamps);
+                int randNum = randomFrom<int>(0, bufferReadSize_);
+                randNum = writePointerPosition_ - randNum;
+                if(randNum < 0) {
+                    randNum = numBufSamps + randNum;
+                }
                 // Set read position of the current pointer to that index
                 readPointers_[j] = grainBuf_.getReadPointer(0, randNum);
                 // Set grain position tracking of pointer to 0
@@ -60,7 +66,7 @@ void Granulator::applyShuffle (const float* const in, float* const out, const in
             // the grain
             readPointers_[j]++;
             readPointersBufferPosition_[j]++;
-            if(readPointersBufferPosition_[j] == numSamps) {
+            if(readPointersBufferPosition_[j] == numBufSamps) {
                 readPointers_[j] = grainBuf_.getReadPointer(0);
                 readPointersBufferPosition_[j] = 0;
             }
@@ -75,7 +81,7 @@ void Granulator::applyShuffle (const float* const in, float* const out, const in
         // Increment the write pointer
         writePointer_++;
         writePointerPosition_++;
-        if(writePointerPosition_ == numSamps) {
+        if(writePointerPosition_ == numBufSamps) {
             writePointer_ = grainBuf_.getWritePointer(0);
             writePointerPosition_ = 0;
         }

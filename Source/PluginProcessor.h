@@ -95,6 +95,7 @@ private:
     std::vector<std::unique_ptr<Granulator>> granulators_;
 
     AudioParameterFloat* grainSizeParam_;
+    AudioParameterFloat* bufReadSizeParam_;
 
     unsigned int sampleRate_ = 0;
 

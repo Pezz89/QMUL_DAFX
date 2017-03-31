@@ -8,7 +8,7 @@ Assignment2Processor::Assignment2Processor()
 {
     std::string s1 = "crossover" + std::to_string(1) + "Freq";
     std::string s2 = "Crossover " + std::to_string(1) + " Frequency";
-    addParameter (grainSizeParam_ = new AudioParameterFloat (s1, s2, NormalisableRange<float>(20.0f, 5000.0f, 0.0f, 1.0f), 100.0f));
+    addParameter (grainSizeParam_ = new AudioParameterFloat (s1, s2, NormalisableRange<float>(20.0f, 5000.0f, 0.0f, 1.0f), 5000.0f));
 }
 
 //==============================================================================

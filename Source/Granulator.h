@@ -16,6 +16,8 @@ class Granulator
         AudioSampleBuffer grainBuf_;
         std::vector<const float*> readPointers_;
         std::vector<int> readPointerGrainPosition_;
+        std::vector<int> readPointerGrainSize_;
+        std::vector<int> perGrainSampCount_;
         std::vector<int> readPointersBufferPosition_;
         float* writePointer_;
         int writePointerPosition_;

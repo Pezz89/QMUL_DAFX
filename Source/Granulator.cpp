@@ -13,11 +13,12 @@ Granulator::Granulator(const int maxBufSize)
     writePointerPosition_ = 0;
 
     // For the number of overlapping grains at any time
-    for(int i=0; i<2; i++) {
+    for(int i=0; i<4; i++) {
         // Create a read pointer
         readPointers_.push_back(grainBuf_.getReadPointer(0));
         // A position of -1 indicates that the pointer is inactive
         readPointerGrainPosition_.push_back(-1);
+        readPointerGrainSize_.push_back(0);
         readPointersBufferPosition_.push_back(0);
     }
 }
@@ -25,7 +26,7 @@ Granulator::Granulator(const int maxBufSize)
 void Granulator::updateParameters(const unsigned int grainSize)
 {
     grainSize_ = grainSize;
-    hopSize_ = ceil(grainSize_/2);
+    hopSize_ = ceil(grainSize_/4);
 }
 
 void Granulator::applyShuffle (const float* const in, float* const out, const int numSamples) noexcept {
@@ -38,7 +39,7 @@ void Granulator::applyShuffle (const float* const in, float* const out, const in
         // For each read pointer for the current channel...
         for(int j=0; j<readPointers_.size(); j++) {
             // If the read pointer isn't currently active...
-            if(j * hopSize_ == sampCounter) {
+            if((j * hopSize_ == sampCounter) && (readPointerGrainPosition_[j] < 0)) {
             //if(readPointerGrainPosition_[j] < 0) {
                 // Generate new index at random within the input sample buffer
                 int randNum = randomFrom<int>(0, numSamps);
@@ -46,11 +47,12 @@ void Granulator::applyShuffle (const float* const in, float* const out, const in
                 readPointers_[j] = grainBuf_.getReadPointer(0, randNum);
                 // Set grain position tracking of pointer to 0
                 readPointerGrainPosition_[j] = 0;
+                readPointerGrainSize_[j] = grainSize_;
                 readPointersBufferPosition_[j] = randNum;
             }
 
             // Generate value for hann window at the current index
-            float winVal = 0.5*(1.0-cos((2*M_PI*readPointerGrainPosition_[j])/(grainSize_-1)));
+            float winVal = 0.5*(1.0-cos((2*M_PI*readPointerGrainPosition_[j])/(readPointerGrainSize_[j]-1)));
             // read current sample into output and multiply by the window
             // function at the current index
             out[i] += *readPointers_[j] * winVal;
@@ -62,9 +64,11 @@ void Granulator::applyShuffle (const float* const in, float* const out, const in
                 readPointers_[j] = grainBuf_.getReadPointer(0);
                 readPointersBufferPosition_[j] = 0;
             }
-            readPointerGrainPosition_[j]++;
+            if(readPointerGrainPosition_[j] > -1) {
+                readPointerGrainPosition_[j]++;
+            }
             // If it has then reset it's position to inactive
-            if(readPointerGrainPosition_[j] == grainSize_) {
+            if(readPointerGrainPosition_[j] >= readPointerGrainSize_[j]) {
                 readPointerGrainPosition_[j] = -1;
             }
         }

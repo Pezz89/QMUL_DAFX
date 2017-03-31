@@ -94,6 +94,10 @@ private:
 
     std::vector<std::unique_ptr<Granulator>> granulators_;
 
+    AudioParameterFloat* grainSizeParam_;
+
+    unsigned int sampleRate_ = 0;
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Assignment2Processor);
 };

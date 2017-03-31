@@ -10,7 +10,7 @@ class Granulator
     public:
         Granulator(const int maxBufSize);
         ~Granulator() {};
-        void updateParameters(const unsigned int grainSize, const unsigned int hopSize);
+        void updateParameters(const unsigned int grainSize);
         void applyShuffle(const float* const in, float* const out, const int numSamples) noexcept;
     private:
         AudioSampleBuffer grainBuf_;
@@ -22,6 +22,9 @@ class Granulator
 
         unsigned int grainSize_;
         unsigned int hopSize_;
+        unsigned int prevHop_ = 0;
+        unsigned int prevGSize = 0;
+        unsigned int sampCounter = 0;
 
         std::vector<float> winowBuf_;
 

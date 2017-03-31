@@ -8,8 +8,7 @@ Assignment2Processor::Assignment2Processor()
 {
     std::string s1 = "crossover" + std::to_string(1) + "Freq";
     std::string s2 = "Crossover " + std::to_string(1) + " Frequency";
-    addParameter (new AudioParameterFloat (s1, s2, NormalisableRange<float>(20.0f, 20000.0f, 0.0f, 1.0f),
-                    round((20000.0f / (1+1))*(1+1))));
+    addParameter (grainSizeParam_ = new AudioParameterFloat (s1, s2, NormalisableRange<float>(20.0f, 5000.0f, 0.0f, 1.0f), 100.0f));
 }
 
 //==============================================================================
@@ -20,8 +19,10 @@ void Assignment2Processor::prepareToPlay (double sampleRate, int samplesPerBlock
     // Create a new granulator object for each input channel
     for(int i=0; i<numInputChannels_; ++i){
         granulators_.push_back(std::make_unique<Granulator>(int(sampleRate*5)));
-        granulators_[i]->updateParameters(44100, 22050);
+        granulators_[i]->updateParameters(int(*grainSizeParam_*(sampleRate/1000)));
     }
+    sampleRate_ = sampleRate;
+
 }
 
 void Assignment2Processor::releaseResources(){}
@@ -47,6 +48,7 @@ void Assignment2Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& 
     // For each channel (Process channels individually)
     for (channel = 0; channel < numInputChannels_; ++channel)
     {
+        granulators_[channel]->updateParameters(int(*grainSizeParam_*(sampleRate_/1000)));
         // Get Read pointer for input and write pointer for output
         const float* in = input.getReadPointer(channel);
         float* out = buffer.getWritePointer(channel);

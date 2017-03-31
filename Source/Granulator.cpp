@@ -11,21 +11,21 @@ Granulator::Granulator(const int maxBufSize)
     // Create a write pointer to use for writing audio to the buffer
     writePointer_ = grainBuf_.getWritePointer(0);
     writePointerPosition_ = 0;
-}
-void Granulator::updateParameters(const unsigned int grainSize, const unsigned int hopSize)
-{
-    hopSize_ = hopSize;
-    grainSize_ = grainSize;
-    grainSize_ = 44100;
-    hopSize_ = 22050;
+
     // For the number of overlapping grains at any time
-    for(int i=0; i<ceil(float(grainSize_)/float(hopSize_)); i++) {
+    for(int i=0; i<2; i++) {
         // Create a read pointer
         readPointers_.push_back(grainBuf_.getReadPointer(0));
         // A position of -1 indicates that the pointer is inactive
         readPointerGrainPosition_.push_back(-1);
         readPointersBufferPosition_.push_back(0);
     }
+}
+
+void Granulator::updateParameters(const unsigned int grainSize)
+{
+    grainSize_ = grainSize;
+    hopSize_ = ceil(grainSize_/2);
 }
 
 void Granulator::applyShuffle (const float* const in, float* const out, const int numSamples) noexcept {
@@ -38,7 +38,8 @@ void Granulator::applyShuffle (const float* const in, float* const out, const in
         // For each read pointer for the current channel...
         for(int j=0; j<readPointers_.size(); j++) {
             // If the read pointer isn't currently active...
-            if(readPointerGrainPosition_[j] < 0) {
+            if(j * hopSize_ == sampCounter) {
+            //if(readPointerGrainPosition_[j] < 0) {
                 // Generate new index at random within the input sample buffer
                 int randNum = randomFrom<int>(0, numSamps);
                 // Set read position of the current pointer to that index
@@ -74,5 +75,7 @@ void Granulator::applyShuffle (const float* const in, float* const out, const in
             writePointer_ = grainBuf_.getWritePointer(0);
             writePointerPosition_ = 0;
         }
+        sampCounter++;
+        sampCounter %= grainSize_;
     }
 }

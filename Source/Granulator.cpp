@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdio>
 #include <algorithm>
+
 Granulator::Granulator(const int maxBufSize) 
 {
     // Create buffer to store a set amount of audio - this will be used as the
@@ -71,6 +72,7 @@ void Granulator::applyShuffle (const float* const in, float* const out, const in
                 readPointers_[j] = grainBuf_.getReadPointer(0);
                 readPointersBufferPosition_[j] = 0;
             }
+            // If read pointer is active...
             if(readPointerGrainPosition_[j] > -1) {
                 readPointerGrainPosition_[j]++;
             }
@@ -80,13 +82,16 @@ void Granulator::applyShuffle (const float* const in, float* const out, const in
             }
         }
         out[i] = (in[i] * (1.0-dryWetMix_)) + (out[i] * dryWetMix_);
-        // Increment the write pointer
+        // Increment the write pointer and it's position
         writePointer_++;
         writePointerPosition_++;
-        if(writePointerPosition_ == numBufSamps) {
+        // Ensure write pointer stays within size of buffer
+        if(writePointerPosition_ >= numBufSamps) {
             writePointer_ = grainBuf_.getWritePointer(0);
             writePointerPosition_ = 0;
         }
+        // Increment global smaple counter and wrap to within range of the
+        // current global grain size.
         sampCounter++;
         sampCounter %= grainSize_;
     }

@@ -6,6 +6,7 @@
 //==============================================================================
 Assignment2Processor::Assignment2Processor()
 {
+    // Create labeled UI parameters using the JUCE generic editor
     std::string s1 = "GrainSize";
     std::string s2 = "Grain Size\t(ms)";
     addParameter (grainSizeParam_ = new AudioParameterFloat (s1, s2, NormalisableRange<float>(5.0f, 3000.0f, 0.0f, 1.0f), 100.0f));
@@ -20,6 +21,7 @@ Assignment2Processor::Assignment2Processor()
 //==============================================================================
 void Assignment2Processor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
+    // Get the total number of input and output channels
     numInputChannels_ = getTotalNumInputChannels();
     numOutputChannels_ = getTotalNumOutputChannels();
     // Create a new granulator object for each input channel
@@ -27,6 +29,7 @@ void Assignment2Processor::prepareToPlay (double sampleRate, int samplesPerBlock
         granulators_.push_back(std::make_unique<Granulator>(int(sampleRate*5)));
         granulators_[i]->updateParameters(int(*grainSizeParam_*(sampleRate/1000)), int(*bufReadSizeParam_*(sampleRate/1000)), *dryWetMixParam_);
     }
+    // Set the sample rate for the effect
     sampleRate_ = sampleRate;
 
 }
@@ -54,11 +57,13 @@ void Assignment2Processor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& 
     // For each channel (Process channels individually)
     for (channel = 0; channel < numInputChannels_; ++channel)
     {
+        // Update parameters that have changed for each granulator object
         granulators_[channel]->updateParameters(int(*grainSizeParam_*(sampleRate_/1000)), int(*bufReadSizeParam_*(sampleRate_/1000)), *dryWetMixParam_);
         // Get Read pointer for input and write pointer for output
         const float* in = input.getReadPointer(channel);
         float* out = buffer.getWritePointer(channel);
 
+        // Apply effect to the current sample
         granulators_[channel]->applyShuffle(in, out, numSamples);
     }
 }

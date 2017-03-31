@@ -12,6 +12,7 @@ class Granulator
         ~Granulator() {};
         void updateParameters(const unsigned int grainSize, const unsigned int bufferReadSize, const float dryWetMix);
         void applyShuffle(const float* const in, float* const out, const int numSamples) noexcept;
+
     private:
         AudioSampleBuffer grainBuf_;
         std::vector<const float*> readPointers_;
@@ -33,6 +34,9 @@ class Granulator
         std::vector<float> winowBuf_;
 
         // Code adapted from: http://stackoverflow.com/questions/5743678/generate-random-number-between-0-and-10
+        // A new random number generator object is created on each call. this
+        // isn't very efficient and should be changed so that a single instance
+        // is reused on each call...
         template <typename T>
         T randomFrom(const T min, const T max)
         {

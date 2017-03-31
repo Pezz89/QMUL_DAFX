@@ -87,8 +87,86 @@
 \begin{document}
 \title{ECS730P --- Digital Audio Effects}
 \subtitle{\LARGE{Assignment 2 Report}}
-\author{Sam Perry --- ec16039}
+\author{Sam Perry --- EC16039}
 
 \maketitle
+
+\section{Design Overview}
+The plugin demonstrates an implementation of a real-time ``granular shuffle''.
+The effects works by randomly selecting small segments of audio from previous
+input, and mixing these back in with current input in continuous overlapping
+grains. The aim of this effect is to allow the user to build up rich textures
+through the build up of previous material in a stochastic fashion. Potential
+applications for this effect include creative sound design and electro-acoustic
+composition. The plugin also remains relevant in a standard audio production
+context, as it's ability to create thick textures in a less traditional manner
+may provide an interesting alternative to traditional delay based effects.
+
+\section{Granular Synthesis Implementation}
+The following steps are taken in order to realise the output of this effect:
+\begin{enumerate}
+    \item Audio is recorded into a buffer of set size from input.
+    \item Overlapping grains of audio are then read from this buffer randomly
+        at the grain size specified. The amount of buffer to use is specified
+        by the user to determine the maximum distance in time allowed between
+        selected grains and the current point in time.
+    \item A Hann window is applied to these grains and mixed by a
+        user-definable amount with the original dry signal, to create an effect
+        comparable to delay and reverb.
+\end{enumerate}
+
+Due to time constraints, the original plan for this effect could not be
+implemented in a robust or reliable manner. Therefore the decision was made to
+focus on ensuring the granular synthesis engine performed accurately over
+implementing further new features (as described in section~\ref{OriginalDesign}). A number of
+issues were dealt with to ensure the correct operation of the synthesis engine:
+\begin{itemize}
+    \item Due to the ability to alter grain size and the length of buffer used
+        for grain selection, there is a risk of grains being cut short or
+        distorting as these parameters are changed. This can happen when a
+        change of grain size alters the variables being used in a currently
+        played grain. For this reason, grain playback was implemented in such a
+        way that any played grain was isolated with set parameters until it had
+        fully finished, avoiding unwanted changes mid-playback.
+    \item Buffer playback size was also implemented in a way that would not
+        have any affect on grains that had begun before a change, allowing for
+        seamless transitions between varying buffer and grain sizes.
+    \item There is also the risk of grains of varying sizes going out of sync,
+        thus loosing the effect of an evenly overlapped stream of audio. A
+        global sample counter was used to address this issue. By triggering
+        samples based on the current global grain size, grains remain
+        overlapped at all points (except for discontinuities between grains of
+        varying sizes, which is unavoidable in this situation).
+\end{itemize}
+
+\section{User Interface/Parameter Selection}
+Throughout the design of the effect, focus was placed on simplicity and ease of
+use for the user. Through prior experience with granular synthesis based
+effects, it was noticed that there is a tendency for large numbers of complex
+parameters to be used in interfaces. An example of this is IRCAM's CataRT
+concatenative synthesis engine, which, although it is an excellent piece of
+software capable of creating a wide variety of interesting sounds, requires a
+great deal of prior knowledge for a user to utilize it effectively. For this
+reason, this product aimed to minimize the number of parameters available to the user in
+order to create a product that is intuitive and creates satisfying results
+quickly. This was inspired primarily by the Waves ``OneKnob'' series of audio
+plugins, which aim to produce one particular effect well for a variety of use
+cases.
+Parameters such as the window overlap factor have been hidden from the user,
+having been set statically to a value of 4 which has been found to provide the
+best trade of between low density of grains and the inherent phase issues that
+occur with high overlap factors.
+
+\section{Original Design Concept}\label{OriginalDesign}
+
+\section{Evaluation}
+The effect's stochastic behaviour in it's selection of grains produces a more
+unpredictable output than that of a standard delay. However, the abaility to
+control the degree to which grains deviate from the current sample, alongside
+the duration of these grains allows for the regulation of this effect.
+\section{Problems/Potential improvements}
+addition of filters on wet mix
+\section{Conclusion}
+
 
 \end{document}
